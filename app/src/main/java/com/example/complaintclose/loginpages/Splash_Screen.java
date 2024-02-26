@@ -27,7 +27,7 @@ public class Splash_Screen extends AppCompatActivity {
         Animation ani = AnimationUtils.loadAnimation(this,R.anim.imageanimation);
         image.startAnimation(ani);
 
-        SharedPreferences preferences = getSharedPreferences("logindata",MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences("postdata",MODE_PRIVATE);
 
         String number = preferences.getString("number",null);
 

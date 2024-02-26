@@ -1,6 +1,5 @@
 package com.example.complaintclose;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
@@ -14,7 +13,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
+import android.os.Handler;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -35,14 +34,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.complaintclose.javafiles.InternetConnection;
 import com.example.complaintclose.javafiles.config_file;
 import com.example.complaintclose.javafiles.fetchdata_from_sqlite;
@@ -69,49 +60,48 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class close_complaint_Form_Activity extends AppCompatActivity {
 
 
-    List<String> countrylist;
-    List<String> statelist;
-    List<String> brandlist;
-    List<String> partynamelist;
-    List<String> citylist;
-    List<String> complainlist;
-    List<String> itemlist;
-    fetchdata_from_sqlite fetchdata;
+    List<String> countrylist,itemlist,statelist ,brandlist,partynamelist,citylist ,complainlist;
+
+
 
     int CAMERA_PIC_REQUEST = 200;
     InternetConnection internetConnection;
 
-    AutoCompleteTextView partyname, state, city, brand, itemName, country, complain;
-    MaterialAutoCompleteTextView closedate,createdate;
-    TextInputEditText address,TDS_IN,TDS_out, partycode,complainNo,groupname,itemquantity,serialno;
-    TextInputLayout addresslayout, emailidlayout, phonenumberlayout, partycodelayout,complainNolayout;
+    AutoCompleteTextView partyname, state, city, brand, country, complain;
+    MaterialAutoCompleteTextView  createdate;
+    TextInputEditText address, TDS_IN, TDS_out, partycode, complainNo;
+    TextInputLayout addresslayout, statelayout, tdsoutlayout, citylayout, descripationlayout, tdsinlayout, partynamelayout, brandlayout, partycodelayout, complainNolayout;
     Button submitbutton;
     ProgressDialog mProgressDialog;
-    AlertDialog alertDialog;
-    LinearLayout linearlayoutlist;
-    TextView selectimage,imagepath;
-
-    String partynameindex, brandindex, locationindex, countyindex, stateindex, cityindex;
-    private Calendar calendar;
+    TextView selectimage, imagepath;
+    String partynameindex, brandindex, countyindex, stateindex,createtime, cityindex,encodeImageString;
     Bitmap bitmap;
-    String encodeImageString,createtime;
     fetchdata_from_sqlite_return_array fetchdata_arrayform;
+    fetchdata_from_sqlite fetchdata;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_complaint_form);
-        calendar = Calendar.getInstance();
         internetConnection = new InternetConnection(this);
 
 
+
+        partycodelayout = findViewById(R.id.partycodelayout);
+        partynamelayout = findViewById(R.id.partynamelayout);
+        tdsinlayout = findViewById(R.id.tdsinlayout);
+        addresslayout = findViewById(R.id.addresslayout);
+        tdsoutlayout = findViewById(R.id.tdsoutlayout);
+        complainNolayout = findViewById(R.id.complainNolayout);
+        citylayout = findViewById(R.id.citylayout);
+        statelayout = findViewById(R.id.statelayout);
+        descripationlayout = findViewById(R.id.descripationlayout);
+        brandlayout = findViewById(R.id.brandlayout);
         complainNo = findViewById(R.id.complaintNo);
         createdate = findViewById(R.id.cretedate);
         partycode = findViewById(R.id.partyCode);
@@ -120,7 +110,6 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         complain = findViewById(R.id.complaint);
 
         city = findViewById(R.id.city);
-        closedate = findViewById(R.id.closedate);
         state = findViewById(R.id.state);
         country = findViewById(R.id.country);
         address = findViewById(R.id.address);
@@ -131,7 +120,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         imagepath = findViewById(R.id.imageulr_path);
         submitbutton = findViewById(R.id.saveButton);
 //        linearlayoutlist = findViewById(R.id.linearlayoutlist);
-       ImageView backarrow = findViewById(R.id.backarrow);
+        ImageView backarrow = findViewById(R.id.backarrow);
 
         brandlist = new ArrayList<>();
         countrylist = new ArrayList<>();
@@ -143,10 +132,9 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         fetchdata_arrayform = new fetchdata_from_sqlite_return_array(this);
 
         Intent intent = getIntent();
-        int id = intent.getIntExtra("id",0);
+        int id = intent.getIntExtra("id", 0);
         String complainno = intent.getStringExtra("complainno");
         complainNo.setText(complainno);
-
         partyname.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -185,49 +173,21 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         });
 
         fetchdata = new fetchdata_from_sqlite(this);
-        if (internetConnection.isConnected() && id == 2)
-        {
+        if (internetConnection.isConnected() && id == 2) {
 
             getSingledata_From_complain_number(complainNo.getText().toString());
 
         }
 
-        closedate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDatePickerDialog(closedate);
-            }
-        });
 
         submitbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                Intent intent1 = new Intent(close_complaint_Form_Activity.this,secound_update_activity.class);
-                intent1.putExtra("complainno",complainNo.getText().toString());
-                intent1.putExtra("createdate",complainNo.getText().toString());
-                intent1.putExtra("partycode",partycode.getText().toString());
-                intent1.putExtra("descripation",complain.getText().toString());
-                intent1.putExtra("address",address.getText().toString());
-                intent1.putExtra("TDS_IN",TDS_IN.getText().toString());
-                intent1.putExtra("TDS_out",TDS_out.getText().toString());
-                intent1.putExtra("encodeImageString",encodeImageString);
-                intent1.putExtra("createtime",createtime);
-                intent1.putExtra("partyid",partynameindex);
-                intent1.putExtra("brand",brandindex);
-                intent1.putExtra("cityid",cityindex);
-                intent1.putExtra("state",stateindex);
-                intent1.putExtra("country",countyindex);
-               startActivity(intent1);
+                getdatafromtextfields();
             }
         });
 
-        createdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDatePickerDialog(createdate);
-            }
-        });
 
         backarrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -240,13 +200,14 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         selectimage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                requestPermissions();
+                camerapermission();
 
             }
         });
 
+        TextWatchercalls();
 
-        mProgressDialog = new  ProgressDialog(this);
+        mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setTitle("Please Wait");
         mProgressDialog.setMessage("Loading..");
 
@@ -257,15 +218,13 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         fetchdata_arrayform.statesetdynamicdata(statelist);
         fetchdata_arrayform.countrysetdynamicdata(countrylist);
 
-        getdropdowndata(config_file.Base_url + "getcomplaintdescription.php",complainlist);
-
-
+        getdropdowndata(config_file.Base_url + "getcomplaintdescription.php", complainlist);
 
         ArrayAdapter<String> partnameAdapter = new ArrayAdapter<>(this, R.layout.list_layout, partynamelist);
         partyname.setDropDownBackgroundResource(R.color.dialog_bg);
         partyname.setAdapter(partnameAdapter);
 
-     ArrayAdapter<String> brandadapter = new ArrayAdapter<>(this, R.layout.list_layout, brandlist);
+        ArrayAdapter<String> brandadapter = new ArrayAdapter<>(this, R.layout.list_layout, brandlist);
 
         brand.setDropDownBackgroundResource(R.color.dialog_bg);
         brand.setAdapter(partnameAdapter);
@@ -295,11 +254,9 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length()>10)
-                {
+                if (s.length() > 10) {
                     getSingledata_From_complain_number(complainNo.getText().toString());
-                }else
-                {
+                } else {
                     createdate.setText("");
                     partycode.setText("");
                     partyname.setText("");
@@ -323,9 +280,132 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
     }
 
-    void errorShowFunction(TextInputLayout layout, TextInputEditText text)
+    void TextWatchercalls()
     {
-        layout.startAnimation(AnimationUtils.loadAnimation(getApplication(),R.anim.shake_text));
+        textwachterinput(complainNo,complainNolayout);
+        textwachterinput(partycode,partycodelayout);
+        textwachterinput(address,addresslayout);
+        textwachterinput(TDS_IN,tdsinlayout);
+        textwachterinput(TDS_out,tdsoutlayout);
+
+        textwachter(partyname,partynamelayout);
+        textwachter(brand,brandlayout);
+        textwachter(city,citylayout);
+        textwachter(state,statelayout);
+        textwachter(complain,descripationlayout);
+
+    }
+
+    void textwachter(AutoCompleteTextView autoCompleteTextView,TextInputLayout layout)
+    {
+        autoCompleteTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                layout.setErrorEnabled(false);
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+    }
+    void textwachterinput(TextInputEditText inputEditText,TextInputLayout layout)
+    {
+        inputEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                layout.setErrorEnabled(false);
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+    }
+
+    void getdatafromtextfields()
+    {
+        if (complainNo.getText().toString().isEmpty()) {
+            errorShowFunction(complainNolayout, complainNo);
+        } else if (partycode.getText().toString().isEmpty()) {
+            errorShowFunction(partycodelayout, partycode);
+        } else if (partyname.getText().toString().isEmpty()) {
+            autoerrorShowFunction(partynamelayout, partyname);
+        } else if (brand.getText().toString().isEmpty()) {
+            autoerrorShowFunction(brandlayout, brand);
+        } else if (city.getText().toString().isEmpty()) {
+            autoerrorShowFunction(citylayout, city);
+        } else if (state.getText().toString().isEmpty()) {
+            autoerrorShowFunction(statelayout, state);
+        } else if (address.getText().toString().isEmpty()) {
+            errorShowFunction(addresslayout, address);
+        } else if (TDS_IN.getText().toString().isEmpty()) {
+            errorShowFunction(tdsinlayout, TDS_IN);
+        } else if (TDS_out.getText().toString().isEmpty()) {
+            errorShowFunction(tdsoutlayout, TDS_out);
+        } else if (complain.getText().toString().isEmpty()) {
+            autoerrorShowFunction(descripationlayout, complain);
+        } else if (imagepath.getText().toString().isEmpty()) {
+            Toast.makeText(close_complaint_Form_Activity.this, "Please select upload image", Toast.LENGTH_SHORT).show();
+        } else {
+            mProgressDialog.show();
+           new Handler().postDelayed(new Runnable() {
+               @Override
+               public void run() {
+                   mProgressDialog.dismiss();
+                   nextactivity();
+               }
+           },2000);
+
+        }
+    }
+
+    void nextactivity()
+    {
+        Intent intent1 = new Intent(close_complaint_Form_Activity.this, secound_update_activity.class);
+        intent1.putExtra("complainno", complainNo.getText().toString());
+        intent1.putExtra("createdate", complainNo.getText().toString());
+        intent1.putExtra("partycode", partycode.getText().toString());
+        intent1.putExtra("descripation", complain.getText().toString());
+        intent1.putExtra("address", address.getText().toString());
+        intent1.putExtra("TDS_IN", TDS_IN.getText().toString());
+        intent1.putExtra("TDS_out", TDS_out.getText().toString());
+        intent1.putExtra("encodeImageString", encodeImageString);
+        intent1.putExtra("createtime", createtime);
+        intent1.putExtra("partyid", partynameindex);
+        intent1.putExtra("brand", brandindex);
+        intent1.putExtra("cityid", cityindex);
+        intent1.putExtra("state", stateindex);
+        intent1.putExtra("country", countyindex);
+        startActivity(intent1);
+
+    }
+    void errorShowFunction(TextInputLayout layout, TextInputEditText text) {
+        layout.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
+        layout.setBoxStrokeErrorColor(ColorStateList.valueOf(Color.RED));
+        layout.setErrorTextColor(ColorStateList.valueOf(Color.RED));
+        layout.setError("Required*");
+        text.requestFocus();
+    }
+
+    void autoerrorShowFunction(TextInputLayout layout, AutoCompleteTextView text) {
+        layout.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
         layout.setBoxStrokeErrorColor(ColorStateList.valueOf(Color.RED));
         layout.setErrorTextColor(ColorStateList.valueOf(Color.RED));
         layout.setError("Required*");
@@ -333,62 +413,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
     }
 
 
-    private void showDatePickerDialog(MaterialAutoCompleteTextView setdataontext) {
-        long maxDateMillis = System.currentTimeMillis();
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                this,
-                new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        // Update calendar with the selected date
-                        calendar.set(Calendar.YEAR, year);
-                        calendar.set(Calendar.MONTH, month);
-                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-                        // Update the text in TextView
-                        updateSelectedDateText(setdataontext);
-                        showTimePickerDialog(setdataontext);
-                    }
-                },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-        );
-
-        datePickerDialog.getDatePicker().setMaxDate(maxDateMillis);
-        datePickerDialog.show();
-
-    }
-
-
-    private void showTimePickerDialog(MaterialAutoCompleteTextView setdataontext) {
-        TimePickerDialog timePickerDialog = new TimePickerDialog(
-                this,
-                new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        // Update calendar with the selected time
-                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        calendar.set(Calendar.MINUTE, minute);
-
-                        // Update the text in TextView
-                        updateSelectedDateText(setdataontext);
-                    }
-                },
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
-                false // 24-hour format
-        );
-
-        timePickerDialog.show();
-    }
-
-    private void updateSelectedDateText(MaterialAutoCompleteTextView createdate) {
-        // Format the selected date and time and display it in TextView
-        String selectedDateTime = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm", calendar).toString();
-        createdate.setText(selectedDateTime);
-    }
-    private void getdropdowndata(String registrationURL,List<String> list) {
+    private void getdropdowndata(String registrationURL, List<String> list) {
 
         class registration extends AsyncTask<String, String, String> {
             @Override
@@ -436,7 +461,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
     private void getSingledata_From_complain_number(String complainno) {
 
-        String registrationURL = config_file.Base_url + "get_complaint_data_by_id.php"+"?complaint_id="+complainno;
+        String registrationURL = config_file.Base_url + "get_complaint_data_by_id.php" + "?complaint_id=" + complainno;
 
 
         class registration extends AsyncTask<String, String, String> {
@@ -449,7 +474,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
                     JSONObject object1 = object.getJSONObject(0);
                     int status = object1.getInt("status");
                     createtime = object1.getString("create_time");
-                    createdate.setText(object1.getString("create_date")+" "+createtime);
+                    createdate.setText(object1.getString("create_date") + " " + createtime);
                     partycode.setText(object1.getString("party_code"));
                     complain.setText(object1.getString("complaint"));
                     address.setText(object1.getString("address"));
@@ -460,18 +485,17 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
                     stateindex = object1.getString("state");
                     countyindex = object1.getString("country");
 
-                    String partygetname =  fetchdata.partysetdynamicdata(partynameindex);
-                    String brandgetname =  fetchdata.brandsetdynamicdata(brandindex);
-                    String citygetname =  fetchdata.citysetdynamicdata(cityindex);
-                    String stategetname =  fetchdata.statesetdynamicdata(stateindex);
-                    String countrygetname =  fetchdata.citysetdynamicdata(countyindex);
+                    String partygetname = fetchdata.partysetdynamicdata(partynameindex);
+                    String brandgetname = fetchdata.brandsetdynamicdata(brandindex);
+                    String citygetname = fetchdata.citysetdynamicdata(cityindex);
+                    String stategetname = fetchdata.statesetdynamicdata(stateindex);
+                    String countrygetname = fetchdata.citysetdynamicdata(countyindex);
 
                     partyname.setText(partygetname);
                     brand.setText(brandgetname);
                     city.setText(citygetname);
                     state.setText(stategetname);
                     country.setText(countrygetname);
-
 
 
                 } catch (JSONException e) {
@@ -501,7 +525,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
     }
 
-    private void requestPermissions() {
+    private void camerapermission() {
         // below line is use to request permission in the current activity.
         // this method is use to handle error in runtime permissions
         Dexter.withActivity(this)
@@ -514,10 +538,10 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
                         // this method is called when all permissions are granted
                         if (multiplePermissionsReport.areAllPermissionsGranted()) {
 
-                            Intent intent=new Intent(Intent.ACTION_PICK);
+                            Intent intent = new Intent(Intent.ACTION_PICK);
 
                             intent.setType("image/*");
-                            startActivityForResult(Intent.createChooser(intent,"Browse Image"),CAMERA_PIC_REQUEST);
+                            startActivityForResult(Intent.createChooser(intent, "Browse Image"), CAMERA_PIC_REQUEST);
 
 
 //                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -572,32 +596,27 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        if(requestCode==CAMERA_PIC_REQUEST && resultCode==RESULT_OK)
-        {
-            Uri filepath=data.getData();
-            try
-            {
-                InputStream inputStream=getContentResolver().openInputStream(filepath);
-                bitmap= BitmapFactory.decodeStream(inputStream);
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == CAMERA_PIC_REQUEST && resultCode == RESULT_OK) {
+            Uri filepath = data.getData();
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(filepath);
+                bitmap = BitmapFactory.decodeStream(inputStream);
                 String imagePath = saveImageToExternalStorage(bitmap);
                 imagepath.setText(imagePath);
                 encodeBitmapImage(bitmap);
-            }catch (Exception ex)
-            {
+            } catch (Exception ex) {
 
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void encodeBitmapImage(Bitmap bitmap)
-    {
-        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,100,byteArrayOutputStream);
-        byte[] bytesofimage=byteArrayOutputStream.toByteArray();
-        encodeImageString=android.util.Base64.encodeToString(bytesofimage, Base64.DEFAULT);
+    private void encodeBitmapImage(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] bytesofimage = byteArrayOutputStream.toByteArray();
+        encodeImageString = android.util.Base64.encodeToString(bytesofimage, Base64.DEFAULT);
     }
 
 

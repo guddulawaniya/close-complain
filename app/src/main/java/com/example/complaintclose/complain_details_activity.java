@@ -56,9 +56,9 @@ public class complain_details_activity extends AppCompatActivity {
         String country = intent.getStringExtra("country");
         String address = intent.getStringExtra("address");
 
+
         SharedPreferences.Editor editor = getSharedPreferences("postdata",MODE_PRIVATE).edit();
         editor.putString("email",emailid);
-        editor.putString("mobile",mobileno);
         editor.commit();
 
 
@@ -115,7 +115,7 @@ public class complain_details_activity extends AppCompatActivity {
             list.add(new complaintModule("Mobile No", mobileno));
         }
         if (complainreason != null && !complainreason.equals("null")  && !complainreason.isEmpty()) {
-            list.add(new complaintModule("Discripation", complainreason));
+            list.add(new complaintModule("Description", complainreason));
         }
         if (city != null && !city.equals("null") && !city.isEmpty()) {
             list.add(new complaintModule("City", city));

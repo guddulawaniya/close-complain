@@ -1,5 +1,6 @@
 package com.example.complaintclose.Fragments;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -39,7 +40,6 @@ public class total_complaint extends Fragment {
     ArrayList<complaintModule> list;
     RecyclerView recyclerView;
     LinearLayout progressBar;
-    private SwipeRefreshLayout swipeRefreshLayout;
     InternetConnection internetConnection;
     partynamedb databaseManager;
     Insertdata_partyname_sqlite insertdatatablefile;
@@ -57,7 +57,6 @@ public class total_complaint extends Fragment {
         progressBar = view.findViewById(R.id.shimmereffect_layout);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         progressBar.setVisibility(View.GONE);
-        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
 
         // internet connnection
         internetConnection = new InternetConnection(getContext());
@@ -72,22 +71,6 @@ public class total_complaint extends Fragment {
 
         // Close the database when done
         databaseManager.close();
-
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            if (internetConnection.isConnected())
-            {
-                recyclerView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-                refreshData();
-            }else
-            {
-                recyclerView.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
-
-        });
 
         progressBar.setVisibility(View.GONE);
 
@@ -111,16 +94,13 @@ public class total_complaint extends Fragment {
 
         return view;
     }
-    private void refreshData() {
-        new android.os.Handler().postDelayed(() -> {
-            getallData();
-
-            swipeRefreshLayout.setRefreshing(false);
-        }, 2000); // 2000 milliseconds = 2 seconds (adjust as needed)
-    }
     private void getallData() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
+
+        SharedPreferences preferences = getContext().getSharedPreferences("postdata",getContext().MODE_PRIVATE);
+        String mobile = preferences.getString("number",null);
+
 
         String registrationURL = config_file.Base_url + "getcomplaint.php";
 
@@ -134,12 +114,14 @@ public class total_complaint extends Fragment {
                     JSONArray object = new JSONArray(s);
 
 
+
                     for (int i = 0; i < object.length(); ++i) {
+
                         JSONObject object1 = object.getJSONObject(i);
                         String compliant_no = object1.getString("compliant_no");
                         int status = object1.getInt("status");
 
-                        if (!compliant_no.isEmpty() && compliant_no!=null)
+                        if (!compliant_no.isEmpty())
                         {
 
                             int party_id = object1.getInt("party_id");

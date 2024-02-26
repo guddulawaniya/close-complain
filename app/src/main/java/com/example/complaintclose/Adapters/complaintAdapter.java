@@ -2,6 +2,7 @@ package com.example.complaintclose.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,6 +49,9 @@ public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.view
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SharedPreferences.Editor editor= context.getSharedPreferences("postdata",context.MODE_PRIVATE).edit();
+                editor.putString("index", String.valueOf(holder.getAbsoluteAdapterPosition()));
+                editor.commit();
                 Intent intent = new Intent(context, complain_details_activity.class);
                 intent.putExtra("comlainno", module.getCompliant_no());
                 intent.putExtra("status", module.getStatus());
@@ -63,6 +67,7 @@ public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.view
                 intent.putExtra("state", module.getState());
                 intent.putExtra("country", module.getCountry());
                 intent.putExtra("address", module.getAddress());
+
                 context.startActivity(intent);
 
             }

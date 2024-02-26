@@ -44,6 +44,7 @@
     </androidx.appcompat.widget.Toolbar>
 
     <LinearLayout
+        android:id="@+id/linearLayout6"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/saveButton"
@@ -84,18 +85,19 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/star_rate_icon"
-                        app:tint="#F30404"/>
+                        app:tint="#F30404" />
                 </LinearLayout>
 
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/complainNolayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:hintEnabled="false">
@@ -104,15 +106,14 @@
                         android:id="@+id/complaintNo"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:hint="Enter Complaint No."
                         android:inputType="none"
-                        android:singleLine="true"
                         android:maxLength="11"
                         android:padding="10dp"
+                        android:singleLine="true"
                         android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="Enter Complaint No."
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -141,10 +142,10 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:hintEnabled="false">
@@ -154,14 +155,15 @@
                         android:id="@+id/cretedate"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:drawableEnd="@drawable/calendar"
+                        android:drawableTint="@color/black"
+                        android:hint="dd-mm-yyyy or  HH:MM"
                         android:inputType="none"
                         android:padding="10dp"
                         android:singleLine="true"
                         android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="dd-mm-yyyy or  HH:MM"
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -188,13 +190,14 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/partycodelayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:hintEnabled="false">
@@ -204,14 +207,13 @@
                         android:id="@+id/partyCode"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:hint="Enter Party Code"
                         android:inputType="none"
                         android:padding="10dp"
-                        android:textColor="@color/black"
                         android:singleLine="true"
+                        android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="Enter Party Code"
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -238,14 +240,14 @@
 
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/countrylayout"
+                    android:id="@+id/partynamelayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:endIconDrawable="@drawable/down_arrow"
@@ -257,19 +259,17 @@
                         android:id="@+id/partyName"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:autoSizeMaxTextSize="16dp"
+                        android:autoSizeMinTextSize="12dp"
+                        android:background="@color/white"
+                        android:hint="Select"
                         android:inputType="none"
                         android:padding="10dp"
-                        android:background="@color/white"
-                        android:autoSizeMinTextSize="12dp"
-                        android:autoSizeMaxTextSize="16dp"
                         android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="Select"
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
-
 
 
                 <LinearLayout
@@ -294,13 +294,14 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/brandlayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:endIconDrawable="@drawable/down_arrow"
@@ -312,21 +313,17 @@
                         android:id="@+id/brand"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:autoSizeMaxTextSize="16dp"
+                        android:autoSizeMinTextSize="12dp"
+                        android:background="@color/white"
+                        android:hint="Select"
                         android:inputType="none"
                         android:padding="10dp"
-                        android:background="@color/white"
-                        android:autoSizeMinTextSize="12dp"
-                        android:autoSizeMaxTextSize="16dp"
                         android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="Select"
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
-
-
-
 
 
                 <LinearLayout
@@ -351,13 +348,14 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/citylayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:endIconDrawable="@drawable/down_arrow"
@@ -403,13 +401,14 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/statelayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:endIconDrawable="@drawable/down_arrow"
@@ -458,10 +457,10 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:endIconDrawable="@drawable/down_arrow"
@@ -508,13 +507,14 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/addresslayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:hintEnabled="false">
@@ -524,35 +524,34 @@
                         android:id="@+id/address"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:hint="Enter the Address"
                         android:inputType="none"
                         android:padding="10dp"
                         android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="Enter the Address"
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
-
 
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TDS IN"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="3dp"
+                    android:text="TDS IN"
                     android:textColor="@color/black"
                     android:textSize="16sp" />
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tdsinlayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:hintEnabled="false">
@@ -562,33 +561,34 @@
                         android:id="@+id/tdsIn"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:inputType="none"
+                        android:hint="Enter TDS IN"
+                        android:inputType="number"
                         android:padding="10dp"
                         android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="Enter TDS IN"
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TDS OUT"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="3dp"
+                    android:inputType="number"
+                    android:text="TDS OUT"
                     android:textColor="@color/black"
                     android:textSize="16sp" />
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tdsoutlayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:hintEnabled="false">
@@ -598,33 +598,33 @@
                         android:id="@+id/tdsOut"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:inputType="none"
+                        android:hint="Enter TDS OUT"
+                        android:inputType="number"
                         android:padding="10dp"
                         android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="Enter TDS OUT"
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Complaint"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="3dp"
+                    android:text="Complaint"
                     android:textColor="@color/black"
                     android:textSize="16sp" />
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/descripationlayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusBottomEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
                     app:boxCornerRadiusTopStart="8dp"
                     app:boxStrokeColor="@color/primarycolor"
                     app:endIconDrawable="@drawable/down_arrow"
@@ -636,84 +636,34 @@
                         android:id="@+id/complaint"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:inputType="none"
-                        android:padding="10dp"
-                        android:background="@color/white"
-                        android:autoSizeMinTextSize="12dp"
                         android:autoSizeMaxTextSize="16dp"
-                        android:textColor="@color/black"
-                        android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
+                        android:autoSizeMinTextSize="12dp"
+                        android:background="@color/white"
                         android:hint="Select"
-                        />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="3dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Closed Date"
-                        android:textColor="@color/black"
-                        android:textSize="16sp" />
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/star_rate_icon"
-                        app:tint="#F30404" />
-                </LinearLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:boxCornerRadiusBottomEnd="8dp"
-                    app:boxCornerRadiusBottomStart="8dp"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxBackgroundColor="@color/white"
-                    app:boxCornerRadiusTopStart="8dp"
-                    app:boxStrokeColor="@color/primarycolor"
-                    app:hintEnabled="false">
-
-
-                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                        android:id="@+id/closedate"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
                         android:inputType="none"
                         android:padding="10dp"
                         android:textColor="@color/black"
                         android:textColorHint="@color/hintColor"
-                        android:textSize="14sp"
-                        android:hint="dd-mm-yyyy"
-                        />
+                        android:textSize="14sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
-
 
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Image"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="3dp"
+                    android:text="Image"
                     android:textColor="@color/black"
                     android:textSize="16sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginBottom="30dp"
                     android:background="@drawable/corner_bg"
-                    android:layout_marginBottom="30dp">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/select_image"
@@ -735,12 +685,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
+                        android:hint="No File Choosen"
                         android:padding="10dp"
-                        android:text="No File Choosen"
                         android:textColor="@color/black"
                         android:textSize="16sp" />
                 </LinearLayout>
-
 
 
             </LinearLayout>
@@ -762,4 +711,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

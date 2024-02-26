@@ -46,7 +46,7 @@ public class Profile_activity extends AppCompatActivity {
         logoutbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences.Editor preferences = getSharedPreferences("logindata",MODE_PRIVATE).edit();
+                SharedPreferences.Editor preferences = getSharedPreferences("postdata",MODE_PRIVATE).edit();
                 preferences.clear();
                 preferences.commit();
                 Intent intent = new Intent(Profile_activity.this, login_Actvity.class);

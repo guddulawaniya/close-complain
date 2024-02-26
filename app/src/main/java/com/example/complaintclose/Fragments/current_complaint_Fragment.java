@@ -1,5 +1,6 @@
 package com.example.complaintclose.Fragments;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -22,6 +24,7 @@ import com.example.complaintclose.Adapters.complaintModule;
 import com.example.complaintclose.Sqlite_Files.Citynamedb;
 import com.example.complaintclose.Sqlite_Files.Insertdata_Cityname_sqlite;
 import com.example.complaintclose.Sqlite_Files.Insertdata_Countryname_sqlite;
+import com.example.complaintclose.Sqlite_Files.Insertdata_brandname_sqlite;
 import com.example.complaintclose.Sqlite_Files.Insertdata_partyname_sqlite;
 import com.example.complaintclose.Sqlite_Files.Insertdata_statename_sqlite;
 import com.example.complaintclose.Sqlite_Files.countrynamedb;
@@ -47,7 +50,7 @@ public class current_complaint_Fragment extends Fragment {
     RecyclerView recyclerView;
 
     LinearLayout progressBar;
-    private SwipeRefreshLayout swipeRefreshLayout;
+
     InternetConnection internetConnection;
     partynamedb databaseManager;
     Citynamedb citynamedb;
@@ -55,13 +58,14 @@ public class current_complaint_Fragment extends Fragment {
 
 
     Cursor cursor;
+    TextView nodata;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_current_complaint_, container, false);
-        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+//        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
 
         // internet connnection
         internetConnection = new InternetConnection(getContext());
@@ -70,6 +74,7 @@ public class current_complaint_Fragment extends Fragment {
         databaseManager = new partynamedb(getContext());
         countrydb = new countrynamedb(getContext());
         citynamedb = new Citynamedb(getContext());
+         nodata = view.findViewById(R.id.nodata);
 
         // cityname insert database
         new Insertdata_Cityname_sqlite(getContext());
@@ -82,6 +87,8 @@ public class current_complaint_Fragment extends Fragment {
 
         // set state data by ids
         new Insertdata_statename_sqlite(getContext());
+        // set state data by ids
+        new Insertdata_brandname_sqlite(getContext());
 
 
 
@@ -91,19 +98,19 @@ public class current_complaint_Fragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
 
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            if (internetConnection.isConnected()) {
-                recyclerView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-                refreshData();
-            } else {
-                swipeRefreshLayout.setRefreshing(false);
-                Toast.makeText(getContext(), "No Internet Connection", Toast.LENGTH_SHORT).show();
-                recyclerView.setVisibility(View.GONE);
-                progressBar.setVisibility(View.VISIBLE);
-            }
-
-        });
+//        swipeRefreshLayout.setOnRefreshListener(() -> {
+//            if (internetConnection.isConnected()) {
+//                recyclerView.setVisibility(View.VISIBLE);
+//                progressBar.setVisibility(View.GONE);
+//                refreshData();
+//            } else {
+//                swipeRefreshLayout.setRefreshing(false);
+//                Toast.makeText(getContext(), "No Internet Connection", Toast.LENGTH_SHORT).show();
+//                recyclerView.setVisibility(View.GONE);
+//                progressBar.setVisibility(View.VISIBLE);
+//            }
+//
+//        });
 
         progressBar.setVisibility(View.GONE);
 
@@ -129,20 +136,20 @@ public class current_complaint_Fragment extends Fragment {
         return view;
     }
 
-    private void refreshData() {
-        new android.os.Handler().postDelayed(() -> {
-
-            getcomplaindata();
-            swipeRefreshLayout.setRefreshing(false);
-        }, 2000); // 2000 milliseconds = 2 seconds (adjust as needed)
-    }
+//    private void refreshData() {
+//        new android.os.Handler().postDelayed(() -> {
+//
+//            getcomplaindata();
+//            swipeRefreshLayout.setRefreshing(false);
+//        }, 2000); // 2000 milliseconds = 2 seconds (adjust as needed)
+//    }
 
     private void getcomplaindata() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
-
         String registrationURL = config_file.Base_url + "getcomplaint.php";
-
+        SharedPreferences preferences = getContext().getSharedPreferences("postdata",getContext().MODE_PRIVATE);
+        String mobile = preferences.getString("number",null);
 
         class registration extends AsyncTask<String, String, String> {
 
@@ -151,12 +158,17 @@ public class current_complaint_Fragment extends Fragment {
 
                 try {
                     JSONArray object = new JSONArray(s);
+                    if (object.length()<1)
+                    {
+                        nodata.setVisibility(View.VISIBLE);
+                    }
+                    nodata.setVisibility(View.GONE);
                     for (int i = 0; i < object.length(); ++i) {
                         JSONObject object1 = object.getJSONObject(i);
                         int status = object1.getInt("status");
                         String compliant_no = object1.getString("compliant_no");
 
-                        if (status == 0 && !compliant_no.isEmpty()) {
+                        if ((status == 0 && !compliant_no.isEmpty())) {
                             int party_id = object1.getInt("party_id");
                             String createDate = object1.getString("create_date");
                             String createtime = object1.getString("create_time");

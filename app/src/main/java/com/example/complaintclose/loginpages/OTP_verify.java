@@ -45,9 +45,10 @@ public class OTP_verify extends AppCompatActivity {
 
                 if (pinView.getText().toString().equals(verifypin))
                 {
-                    SharedPreferences.Editor editor = getSharedPreferences("logindata",MODE_PRIVATE).edit();
+                    SharedPreferences.Editor editor = getSharedPreferences("postdata",MODE_PRIVATE).edit();
                     editor.putString("number",mobilenumber);
                     editor.commit();
+
                     Toast.makeText(OTP_verify.this, "Successfully Verified", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(OTP_verify.this, MainActivity.class));
                     finish();

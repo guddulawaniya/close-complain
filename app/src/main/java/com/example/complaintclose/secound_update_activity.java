@@ -29,6 +29,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.complaintclose.Adapters.data_insert_module;
 import com.example.complaintclose.javafiles.config_file;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -63,8 +64,9 @@ public class secound_update_activity extends AppCompatActivity {
     TextView deletebutton;
     String encodeImageString;
     ProgressDialog mProgressDialog;
+    ArrayList<data_insert_module> datalist;
 
-    String complainno,createdate,createtime,emailid,mobileno,partyid,tdsin,tdsout,partycode,descripation,brand,address,cityid,state,country;
+    String index, complainno,createdate,createtime,emailid,mobileno,partyid,tdsin,tdsout,partycode,descripation,brand,address,cityid,state,country;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,6 +81,7 @@ public class secound_update_activity extends AppCompatActivity {
         addlinearlayout = findViewById(R.id.addlinearlayout);
         grouplist = new ArrayList<>();
         itemlist = new ArrayList<>();
+        datalist = new ArrayList<>();
 
         Intent intent = getIntent();
         complainno = intent.getStringExtra("complainno");
@@ -100,7 +103,8 @@ public class secound_update_activity extends AppCompatActivity {
 
         SharedPreferences preferences = getSharedPreferences("postdata",MODE_PRIVATE);
          emailid = preferences.getString("email",null);
-         mobileno = preferences.getString("mobile",null);
+         mobileno = preferences.getString("number",null);
+         index = preferences.getString("index",null);
 
         getdropdowndata(config_file.Base_url+"getgroupname.php",grouplist);
         getdropdowndata(config_file.Base_url+"getitemname.php",itemlist);
@@ -134,7 +138,7 @@ public class secound_update_activity extends AppCompatActivity {
 
 
         int lastIndex = addlinearlayout.getChildCount();
-        if (lastIndex < 1) deletebutton.setVisibility(View.GONE);
+        if (lastIndex < 2) deletebutton.setVisibility(View.GONE);
 
         backarrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,8 +159,8 @@ public class secound_update_activity extends AppCompatActivity {
         submitbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getdatafromdynamic_layout();
                 uploaddatatodb();
-
             }
         });
 
@@ -176,6 +180,24 @@ public class secound_update_activity extends AppCompatActivity {
 
     }
 
+    void getdatafromdynamic_layout()
+    {
+        int count = addlinearlayout.getChildCount();
+        for (int i=0;i<count;i++)
+        {
+            View itemlayout = addlinearlayout.getChildAt(i);
+            TextView groupfield = itemlayout.findViewById(R.id.groupname);
+            TextView itemname = itemlayout.findViewById(R.id.itemName);
+            TextView qntyno = itemlayout.findViewById(R.id.qntyno);
+            TextView serialno = itemlayout.findViewById(R.id.serialNo);
+            String gpdata = groupfield.getText().toString();
+            String itdata = itemname.getText().toString();
+            String qntydata = qntyno.getText().toString();
+            String serialdata = serialno.getText().toString();
+            datalist.add(new data_insert_module(gpdata,itdata,qntydata,serialdata));
+
+        }
+    }
     private void animateDuplicateView(View view) {
         // ViewPropertyAnimator example (translation animation)
         Animation animation = new TranslateAnimation(
@@ -200,6 +222,7 @@ public class secound_update_activity extends AppCompatActivity {
 
         ArrayAdapter<String> groupadapter = new ArrayAdapter<>(this, R.layout.list_layout, grouplist);
         groupname.setDropDownBackgroundResource(R.color.dialog_bg);
+
         groupname.setAdapter(groupadapter);
 
         ArrayAdapter<String> itemadapter = new ArrayAdapter<>(this, R.layout.list_layout, itemlist);
@@ -218,7 +241,7 @@ public class secound_update_activity extends AppCompatActivity {
 
         int lastIndex = addlinearlayout.getChildCount()-1;
         addlinearlayout.removeViewAt(lastIndex);
-        if (lastIndex < 1) deletebutton.setVisibility(View.GONE);
+        if (lastIndex < 2) deletebutton.setVisibility(View.GONE);
     }
 
     private void getdropdowndata(String registrationURL, List<String> list) {
@@ -267,7 +290,7 @@ public class secound_update_activity extends AppCompatActivity {
 
     }
     private void postDataUsingVolley() {
-        String url = config_file.Base_url + "close_compalint_id.php";
+        String url = config_file.Base_url + "closecomplaint.php";
 
         long currentTimeMillis = System.currentTimeMillis();
         Date currentDate = new Date(currentTimeMillis);
@@ -284,7 +307,7 @@ public class secound_update_activity extends AppCompatActivity {
             public void onResponse(String response) {
 
                 mProgressDialog.dismiss();
-                Toast.makeText(secound_update_activity.this, "successfully Added Complaint", Toast.LENGTH_SHORT).show();
+                Toast.makeText(secound_update_activity.this, "successfully Close Complaint", Toast.LENGTH_SHORT).show();
                 alertDialog.show();
             }
         }, new com.android.volley.Response.ErrorListener() {
@@ -298,23 +321,26 @@ public class secound_update_activity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("compliantnumber", complainno);
-                params.put("date_s", createdate);
-                params.put("time_s", createtime);
+                params.put("compliantnumber", mobileno);
+                params.put("compliantid", index);
                 params.put("party_id", partyid);
                 params.put("brand_name", brand);
                 params.put("party_code", partycode);
-                params.put("party_address", address);
                 params.put("cityid", cityid);
                 params.put("state", state);
                 params.put("country", country);
                 params.put("email", emailid);
                 params.put("phone", mobileno);
                 params.put("description", descripation);
-                params.put("TDS_IN", tdsin);
-                params.put("TDS_OUT", tdsout);
-                params.put("DATE", String.valueOf(dates));
-                params.put("TIME", currentTime);
+                params.put("under", datalist.toString());
+//                params.put("party_address", address);
+//                params.put("date_s", createdate);
+//                params.put("time_s", createtime);
+//                params.put("under", descripation);
+//                params.put("TDS_IN", tdsin);
+//                params.put("TDS_OUT", tdsout);
+//                params.put("DATE", String.valueOf(dates));
+//                params.put("TIME", currentTime);
                 return params;
             }
         };
@@ -348,7 +374,6 @@ public class secound_update_activity extends AppCompatActivity {
                 return map;
             }
         };
-
         RequestQueue queue= Volley.newRequestQueue(getApplicationContext());
         queue.add(request);
     }

@@ -57,6 +57,7 @@ public class login_Actvity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!mobilenumber.getText().toString().isEmpty() && mobilenumber.getText().length()==10)
                 {
+
                     Intent intent = new Intent(login_Actvity.this, OTP_verify.class);
                     intent.putExtra("otp","1234");
                     intent.putExtra("number",mobilenumber.getText().toString());
