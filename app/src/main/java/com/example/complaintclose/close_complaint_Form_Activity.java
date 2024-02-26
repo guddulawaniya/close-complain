@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.View;
@@ -65,22 +66,19 @@ import java.util.List;
 public class close_complaint_Form_Activity extends AppCompatActivity {
 
 
-    List<String> countrylist,itemlist,statelist ,brandlist,partynamelist,citylist ,complainlist;
+    List<String> itemlist,statelist ,brandlist,partynamelist,citylist ,complainlist;
 
-
-
-    int CAMERA_PIC_REQUEST = 200;
     InternetConnection internetConnection;
 
-    AutoCompleteTextView partyname, state, city, brand, country, complain;
+    AutoCompleteTextView partyname, state, city, brand, complain;
     MaterialAutoCompleteTextView  createdate;
     TextInputEditText address, TDS_IN, TDS_out, partycode, complainNo;
     TextInputLayout addresslayout, statelayout, tdsoutlayout, citylayout, descripationlayout, tdsinlayout, partynamelayout, brandlayout, partycodelayout, complainNolayout;
     Button submitbutton;
     ProgressDialog mProgressDialog;
-    TextView selectimage, imagepath;
+
     String partynameindex, brandindex, countyindex, stateindex,createtime, cityindex,encodeImageString;
-    Bitmap bitmap;
+
     fetchdata_from_sqlite_return_array fetchdata_arrayform;
     fetchdata_from_sqlite fetchdata;
 
@@ -89,8 +87,6 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_complaint_form);
         internetConnection = new InternetConnection(this);
-
-
 
         partycodelayout = findViewById(R.id.partycodelayout);
         partynamelayout = findViewById(R.id.partynamelayout);
@@ -111,19 +107,16 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
         city = findViewById(R.id.city);
         state = findViewById(R.id.state);
-        country = findViewById(R.id.country);
         address = findViewById(R.id.address);
 
         TDS_IN = findViewById(R.id.tdsIn);
         TDS_out = findViewById(R.id.tdsOut);
-        selectimage = findViewById(R.id.select_image);
-        imagepath = findViewById(R.id.imageulr_path);
+
         submitbutton = findViewById(R.id.saveButton);
 //        linearlayoutlist = findViewById(R.id.linearlayoutlist);
         ImageView backarrow = findViewById(R.id.backarrow);
 
         brandlist = new ArrayList<>();
-        countrylist = new ArrayList<>();
         statelist = new ArrayList<>();
         citylist = new ArrayList<>();
         partynamelist = new ArrayList<>();
@@ -197,26 +190,17 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         });
 
 
-        selectimage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                camerapermission();
 
-            }
-        });
 
         TextWatchercalls();
 
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setTitle("Please Wait");
-        mProgressDialog.setMessage("Loading..");
+
 
 
         fetchdata_arrayform.partysetdynamicdata(partynamelist);
         fetchdata_arrayform.brandsetdynamicdata(brandlist);
         fetchdata_arrayform.citysetdynamicdata(citylist);
         fetchdata_arrayform.statesetdynamicdata(statelist);
-        fetchdata_arrayform.countrysetdynamicdata(countrylist);
 
         getdropdowndata(config_file.Base_url + "getcomplaintdescription.php", complainlist);
 
@@ -227,16 +211,12 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         ArrayAdapter<String> brandadapter = new ArrayAdapter<>(this, R.layout.list_layout, brandlist);
 
         brand.setDropDownBackgroundResource(R.color.dialog_bg);
-        brand.setAdapter(partnameAdapter);
+        brand.setAdapter(brandadapter);
 
 
         ArrayAdapter<String> stateadapter = new ArrayAdapter<>(this, R.layout.list_layout, statelist);
         state.setDropDownBackgroundResource(R.color.dialog_bg);
         state.setAdapter(stateadapter);
-
-        ArrayAdapter<String> citystateadapter = new ArrayAdapter<>(this, R.layout.list_layout, countrylist);
-        country.setDropDownBackgroundResource(R.color.dialog_bg);
-        country.setAdapter(citystateadapter);
 
         ArrayAdapter<String> cityAdapter = new ArrayAdapter<>(this, R.layout.list_layout, citylist);
         city.setDropDownBackgroundResource(R.color.dialog_bg);
@@ -256,6 +236,12 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 10) {
                     getSingledata_From_complain_number(complainNo.getText().toString());
+                } else if (s.length()==2) {
+                    complainNo.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+                } else if (s.length()<2) {
+                    complainNo.setInputType(InputType.TYPE_TEXT_VARIATION_NORMAL);
+
                 } else {
                     createdate.setText("");
                     partycode.setText("");
@@ -264,7 +250,6 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
                     complain.setText("");
                     city.setText("");
                     state.setText("");
-                    country.setText("");
                     address.setText("");
                     TDS_IN.setText("");
                     TDS_out.setText("");
@@ -361,18 +346,9 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
             errorShowFunction(tdsoutlayout, TDS_out);
         } else if (complain.getText().toString().isEmpty()) {
             autoerrorShowFunction(descripationlayout, complain);
-        } else if (imagepath.getText().toString().isEmpty()) {
-            Toast.makeText(close_complaint_Form_Activity.this, "Please select upload image", Toast.LENGTH_SHORT).show();
-        } else {
-            mProgressDialog.show();
-           new Handler().postDelayed(new Runnable() {
-               @Override
-               public void run() {
-                   mProgressDialog.dismiss();
-                   nextactivity();
-               }
-           },2000);
+        }else {
 
+                   nextactivity();
         }
     }
 
@@ -392,7 +368,6 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         intent1.putExtra("brand", brandindex);
         intent1.putExtra("cityid", cityindex);
         intent1.putExtra("state", stateindex);
-        intent1.putExtra("country", countyindex);
         startActivity(intent1);
 
     }
@@ -456,10 +431,13 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         registration obj = new registration();
         obj.execute(registrationURL);
 
-
     }
 
     private void getSingledata_From_complain_number(String complainno) {
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setTitle("Please Wait");
+        mProgressDialog.setMessage("Loading..");
+        mProgressDialog.show();
 
         String registrationURL = config_file.Base_url + "get_complaint_data_by_id.php" + "?complaint_id=" + complainno;
 
@@ -478,7 +456,6 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
                     partycode.setText(object1.getString("party_code"));
                     complain.setText(object1.getString("complaint"));
                     address.setText(object1.getString("address"));
-
                     partynameindex = object1.getString("party_id");
                     brandindex = object1.getString("brand_id");
                     cityindex = object1.getString("city_id");
@@ -489,17 +466,16 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
                     String brandgetname = fetchdata.brandsetdynamicdata(brandindex);
                     String citygetname = fetchdata.citysetdynamicdata(cityindex);
                     String stategetname = fetchdata.statesetdynamicdata(stateindex);
-                    String countrygetname = fetchdata.citysetdynamicdata(countyindex);
 
                     partyname.setText(partygetname);
                     brand.setText(brandgetname);
                     city.setText(citygetname);
                     state.setText(stategetname);
-                    country.setText(countrygetname);
-
+                    mProgressDialog.dismiss();
 
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    mProgressDialog.dismiss();
+                    Toast.makeText(close_complaint_Form_Activity.this, "something went Wrong Try Again ", Toast.LENGTH_SHORT).show();
                 }
                 super.onPostExecute(s);
             }
@@ -525,129 +501,5 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
     }
 
-    private void camerapermission() {
-        // below line is use to request permission in the current activity.
-        // this method is use to handle error in runtime permissions
-        Dexter.withActivity(this)
-                // below line is use to request the number of permissions which are required in our app.
-                .withPermissions(android.Manifest.permission.CAMERA)
-                // after adding permissions we are calling an with listener method.
-                .withListener(new MultiplePermissionsListener() {
-                    @Override
-                    public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
-                        // this method is called when all permissions are granted
-                        if (multiplePermissionsReport.areAllPermissionsGranted()) {
-
-                            Intent intent = new Intent(Intent.ACTION_PICK);
-
-                            intent.setType("image/*");
-                            startActivityForResult(Intent.createChooser(intent, "Browse Image"), CAMERA_PIC_REQUEST);
-
-
-//                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                            startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
-                        }
-                        // check for permanent denial of any permission
-                        if (multiplePermissionsReport.isAnyPermissionPermanentlyDenied()) {
-                            // permission is denied permanently, we will show user a dialog message.
-                            showSettingsDialog();
-                        }
-                    }
-
-                    @Override
-                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> list, PermissionToken permissionToken) {
-                        // this method is called when user grants some permission and denies some of them.
-                        permissionToken.continuePermissionRequest();
-                    }
-                }).withErrorListener(error -> {
-                    // we are displaying a toast message for error message.
-                    Toast.makeText(getApplicationContext(), "Error occurred! ", Toast.LENGTH_SHORT).show();
-                })
-                // below line is use to run the permissions on same thread and to check the permissions
-                .onSameThread().check();
-    }
-
-    // below is the shoe setting dialog method which is use to display a dialogue message.
-    private void showSettingsDialog() {
-        // we are displaying an alert dialog for permissions
-        AlertDialog.Builder builder = new AlertDialog.Builder(close_complaint_Form_Activity.this);
-
-        // below line is the title for our alert dialog.
-        builder.setTitle("Need Permissions");
-
-        // below line is our message for our dialog
-        builder.setMessage("This app needs permission to use this feature. You can grant them in app settings.");
-        builder.setPositiveButton("GOTO SETTINGS", (dialog, which) -> {
-            // this method is called on click on positive button and on clicking shit button
-            // we are redirecting our user from our app to the settings page of our app.
-            dialog.cancel();
-            // below is the intent from which we are redirecting our user.
-            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            Uri uri = Uri.fromParts("package", getPackageName(), null);
-            intent.setData(uri);
-            startActivityForResult(intent, 101);
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
-            // this method is called when user click on negative button.
-            dialog.cancel();
-        });
-        // below line is used to display our dialog
-        builder.show();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == CAMERA_PIC_REQUEST && resultCode == RESULT_OK) {
-            Uri filepath = data.getData();
-            try {
-                InputStream inputStream = getContentResolver().openInputStream(filepath);
-                bitmap = BitmapFactory.decodeStream(inputStream);
-                String imagePath = saveImageToExternalStorage(bitmap);
-                imagepath.setText(imagePath);
-                encodeBitmapImage(bitmap);
-            } catch (Exception ex) {
-
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void encodeBitmapImage(Bitmap bitmap) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-        byte[] bytesofimage = byteArrayOutputStream.toByteArray();
-        encodeImageString = android.util.Base64.encodeToString(bytesofimage, Base64.DEFAULT);
-    }
-
-
-    private String saveImageToExternalStorage(Bitmap imageBitmap) {
-        // Define the directory where you want to save the image
-        File directory = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "YourAppName");
-
-        // Create the directory if it doesn't exist
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-
-        // Create a unique file name for the image
-        String fileName = "IMG_" + System.currentTimeMillis() + ".jpg";
-
-//        // Create the file in the specified directory
-//        File file = new File(directory, fileName);
-//
-//        try {
-//            // Save the bitmap to the file
-//            FileOutputStream fos = new FileOutputStream(file);
-//            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-//            fos.flush();
-//            fos.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-        // Return the absolute path of the saved file
-        return fileName;
-    }
 
 }
