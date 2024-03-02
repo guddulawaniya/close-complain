@@ -21,6 +21,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,7 +37,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.complaintclose.Adapters.data_insert_module;
+import com.example.complaintclose.javafiles.ApiService;
+import com.example.complaintclose.javafiles.ArrayData;
+import com.example.complaintclose.javafiles.RetrofitClient;
 import com.example.complaintclose.javafiles.config_file;
+import com.example.complaintclose.javafiles.datapostmodule;
 import com.google.android.material.textfield.TextInputEditText;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -53,6 +58,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -63,6 +69,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
 
 public class secound_update_activity extends AppCompatActivity {
 
@@ -75,11 +84,13 @@ public class secound_update_activity extends AppCompatActivity {
 
     List<String> grouplist, itemlist;
     Bitmap bitmap;
-    TextView deletebutton;
+    TextView viewitem;
     String encodeImageString;
     ProgressDialog mProgressDialog;
-    ArrayList<data_insert_module> datalist;
+    ArrayList<ArrayData> datalist;
     TextView selectimage, imagepath;
+
+    List<datapostmodule> postdatalist;
 
     String index, complainno, createdate, createtime, emailid, mobileno, partyid, tdsin, tdsout, partycode, descripation, brand, address, cityid, state, country;
 
@@ -91,16 +102,24 @@ public class secound_update_activity extends AppCompatActivity {
         setContentView(R.layout.secount_activity_layout);
 
         TextView addbutton = findViewById(R.id.additembutton);
-        deletebutton = findViewById(R.id.deletebutton);
+        viewitem = findViewById(R.id.viewbutton);
         prebutton = findViewById(R.id.prebutton);
         submitbutton = findViewById(R.id.saveButton);
         backarrow = findViewById(R.id.backarrow);
         selectimage = findViewById(R.id.select_image);
         imagepath = findViewById(R.id.imageulr_path);
         addlinearlayout = findViewById(R.id.addlinearlayout);
+        serialNo = findViewById(R.id.serialNo);
+        qntyno = findViewById(R.id.qntyno);
+       RelativeLayout deletelayout = findViewById(R.id.deletelayout);
+       deletelayout.setVisibility(View.GONE);
+
+
+
         grouplist = new ArrayList<>();
         itemlist = new ArrayList<>();
         datalist = new ArrayList<>();
+        postdatalist = new ArrayList<>();
 
         Intent intent = getIntent();
         complainno = intent.getStringExtra("complainno");
@@ -126,8 +145,21 @@ public class secound_update_activity extends AppCompatActivity {
 
 
 
+
+
         // inflate the dynamic layout of card
-        additemfor_series_number();
+//        additemfor_series_number();
+        groupname = findViewById(R.id.groupname);
+        itemName =  findViewById(R.id.itemName);
+
+        ArrayAdapter<String> groupadapter = new ArrayAdapter<>(this, R.layout.list_layout, grouplist);
+        groupname.setDropDownBackgroundResource(R.color.dialog_bg);
+
+        groupname.setAdapter(groupadapter);
+
+        ArrayAdapter<String> itemadapter = new ArrayAdapter<>(this, R.layout.list_layout, itemlist);
+        itemName.setDropDownBackgroundResource(R.color.dialog_bg);
+        itemName.setAdapter(itemadapter);
 
 
         // loader dialog box
@@ -140,9 +172,6 @@ public class secound_update_activity extends AppCompatActivity {
 
 
 
-        int lastIndex = addlinearlayout.getChildCount();
-        if (lastIndex < 2) deletebutton.setVisibility(View.GONE);
-
         backarrow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,11 +180,13 @@ public class secound_update_activity extends AppCompatActivity {
         });
 
 
-        deletebutton.setOnClickListener(new View.OnClickListener() {
+        viewitem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                deleteitem_for_series_number();
+                Intent intent1 = new Intent(secound_update_activity.this,data_show.class);
+                intent1.putExtra("id",complainno);
+                startActivity(intent1);
 
             }
         });
@@ -191,17 +222,71 @@ public class secound_update_activity extends AppCompatActivity {
         addbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                additemfor_series_number();
+                if (groupname.getText().toString().isEmpty())
+                {
+                    Toast.makeText(secound_update_activity.this, "Select Group name", Toast.LENGTH_SHORT).show();
+                } else if (itemName.getText().toString().isEmpty()) {
+                    Toast.makeText(secound_update_activity.this, "Select Group name", Toast.LENGTH_SHORT).show();
+
+                } else if (qntyno.getText().toString().isEmpty()) {
+                    Toast.makeText(secound_update_activity.this, "Select Group name", Toast.LENGTH_SHORT).show();
+
+                } else if (serialNo.getText().toString().isEmpty()) {
+                    Toast.makeText(secound_update_activity.this, "Select Group name", Toast.LENGTH_SHORT).show();
+                }
+                else {
+
+                    postdataonlygroupapi();
+                }
+
             }
         });
 
     }
 
-    void closedialog()
+    private void postdataonlygroupapi() {
+        mProgressDialog.show();
+
+        String registrationURL = config_file.Base_url+"item_details_close.php?complainnumber="+complainno+"&group="+groupname.getText().toString()+"&itemname="+itemName.getText().toString()+"&qty="+qntyno.getText().toString()+"&srno="+serialNo.getText().toString();
+        class registration extends AsyncTask<String, String, String> {
+            @Override
+            protected void onPostExecute(String s) {
+                groupname.setText("");
+                itemName.setText("");
+                serialNo.setText("");
+                qntyno.setText("");
+                mProgressDialog.dismiss();
+
+                Toast.makeText(secound_update_activity.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show();
+
+
+                super.onPostExecute(s);
+            }
+
+            @Override
+            protected String doInBackground(String... param) {
+
+                try {
+                    URL url = new URL(param[0]);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    return br.readLine();
+                } catch (Exception ex) {
+                    return ex.getMessage();
+                }
+
+            }
+
+        }
+        registration obj = new registration();
+        obj.execute(registrationURL);
+    }
+
+    void closedialog(String response)
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(secound_update_activity.this);
 
-        builder.setMessage("Successfully Close Complaint");
+        builder.setMessage(response);
 
         builder.setTitle("Complaint");
 
@@ -227,11 +312,13 @@ public class secound_update_activity extends AppCompatActivity {
             TextView itemname = itemlayout.findViewById(R.id.itemName);
             TextView qntyno = itemlayout.findViewById(R.id.qntyno);
             TextView serialno = itemlayout.findViewById(R.id.serialNo);
+
+
             String gpdata = groupfield.getText().toString();
             String itdata = itemname.getText().toString();
             String qntydata = qntyno.getText().toString();
             String serialdata = serialno.getText().toString();
-            datalist.add(new data_insert_module(gpdata, itdata, qntydata, serialdata));
+            datalist.add(new ArrayData(gpdata, itdata, qntydata, serialdata));
 
         }
     }
@@ -250,30 +337,6 @@ public class secound_update_activity extends AppCompatActivity {
         view.startAnimation(animation);
     }
 
-
-    void additemfor_series_number() {
-        View view = getLayoutInflater().inflate(R.layout.add_series_layout_list, null, false);
-
-
-        groupname = view.findViewById(R.id.groupname);
-        itemName = view.findViewById(R.id.itemName);
-
-        ArrayAdapter<String> groupadapter = new ArrayAdapter<>(this, R.layout.list_layout, grouplist);
-        groupname.setDropDownBackgroundResource(R.color.dialog_bg);
-
-        groupname.setAdapter(groupadapter);
-
-        ArrayAdapter<String> itemadapter = new ArrayAdapter<>(this, R.layout.list_layout, itemlist);
-        itemName.setDropDownBackgroundResource(R.color.dialog_bg);
-        itemName.setAdapter(itemadapter);
-
-        animateDuplicateView(view);
-        if (deletebutton.getVisibility() == View.GONE) {
-            deletebutton.setVisibility(View.VISIBLE);
-        }
-        addlinearlayout.addView(view);
-
-    }
 
 
     private void camerapermission() {
@@ -396,12 +459,6 @@ public class secound_update_activity extends AppCompatActivity {
         return fileName;
     }
 
-    void deleteitem_for_series_number() {
-
-        int lastIndex = addlinearlayout.getChildCount() - 1;
-        addlinearlayout.removeViewAt(lastIndex);
-        if (lastIndex < 2) deletebutton.setVisibility(View.GONE);
-    }
 
     private void getdropdowndata(String registrationURL, List<String> list,boolean check) {
         mProgressDialog.show();
@@ -414,7 +471,6 @@ public class secound_update_activity extends AppCompatActivity {
                 {
                     mProgressDialog.dismiss();
                 }
-
 
                 try {
                     JSONArray object = new JSONArray(s);
@@ -456,6 +512,38 @@ public class secound_update_activity extends AppCompatActivity {
 
     }
 
+    void senddataonserver()
+    {
+        mProgressDialog.show();
+        datapostmodule datapostmodule = new datapostmodule(complainno,index,partyid,brand,partycode,cityid,state,emailid,mobileno,descripation,datalist);
+
+        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+
+        Call<Void> call = apiService.sendDataArray(datapostmodule);
+        call.enqueue(new Callback<Void>() {
+
+            @Override
+            public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
+
+                if (response.isSuccessful()) {
+
+                    mProgressDialog.dismiss();
+                    Toast.makeText(secound_update_activity.this, "Successfully Close Complaint", Toast.LENGTH_SHORT).show();
+                    closedialog(response.message().toString());
+                } else {
+                    // Handle error
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                // Handle failure
+            }
+        });
+    }
+
+
     private void postDataUsingVolley() {
         String url = config_file.Base_url + "closecomplaint.php";
 
@@ -475,7 +563,7 @@ public class secound_update_activity extends AppCompatActivity {
 
                 mProgressDialog.dismiss();
                 Toast.makeText(secound_update_activity.this, "Successfully Close Complaint", Toast.LENGTH_SHORT).show();
-                closedialog();
+//                closedialog();
             }
         }, new com.android.volley.Response.ErrorListener() {
             @Override
@@ -520,7 +608,7 @@ public class secound_update_activity extends AppCompatActivity {
         StringRequest request = new StringRequest(Request.Method.POST, config_file.Base_url + "imageupload.php", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                postDataUsingVolley();
+                senddataonserver();
 
             }
 

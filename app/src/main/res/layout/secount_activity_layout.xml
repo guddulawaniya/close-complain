@@ -67,6 +67,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
+                    <include layout="@layout/add_series_layout_list"/>
 
                 </LinearLayout>
 
@@ -84,21 +85,21 @@
                         android:layout_marginTop="5dp"
                         android:background="@drawable/corner_bg"
                         android:padding="10dp"
-                        android:text="Add Items"
+                        android:text="Upload Items"
                         android:textColor="@color/hintColor"
                         android:textSize="14sp" />
 
                     <TextView
-                        android:id="@+id/deletebutton"
+                        android:id="@+id/viewbutton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_gravity="right"
                         android:layout_marginTop="5dp"
                         android:layout_marginEnd="16dp"
-                        android:background="@drawable/deleteitembg"
+                        android:background="@drawable/corner_bg"
                         android:padding="10dp"
-                        android:text="Delete Item"
+                        android:text="View Item"
                         android:textColor="@color/hintColor"
                         android:textSize="14sp" />
 
@@ -162,6 +163,7 @@
                 android:layout_weight="2"
                 android:hint="No File Choosen"
                 android:padding="10dp"
+                android:textColorHint="@color/hintColor"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
         </LinearLayout>
