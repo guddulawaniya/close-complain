@@ -1,13 +1,23 @@
 package com.example.complaintclose.Adapters;
 
 public class datashowmodule {
-    String groupname,itemName,qntyno, serialNo;
+    String  groupname,itemName,qntyno, serialNo;
+    int index;
 
-    public datashowmodule(String groupname, String itemName, String qntyno, String serialNo) {
+    public datashowmodule(int index,String groupname, String itemName, String qntyno, String serialNo) {
+        this.index = index;
         this.groupname = groupname;
         this.itemName = itemName;
         this.qntyno = qntyno;
         this.serialNo = serialNo;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public String getGroupname() {

@@ -37,6 +37,7 @@ public class data_show extends AppCompatActivity {
     RecyclerView recyclerview;
     TextView  notfound;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,6 +74,7 @@ public class data_show extends AppCompatActivity {
             @Override
             protected void onPostExecute(String s) {
                 mProgressDialog.dismiss();
+
                 try {
                     JSONArray jsonArray = new JSONArray(s);
                     for (int i=0;i< jsonArray.length();i++)
@@ -83,7 +85,7 @@ public class data_show extends AppCompatActivity {
                         String item_name = object.getString("item_name");
                         String item_qty = object.getString("item_qty");
                         String item_srno = object.getString("item_srno");
-                        list.add(new datashowmodule(groupname,item_name,item_qty,item_srno));
+                        list.add(new datashowmodule(i,groupname,item_name,item_qty,item_srno));
 
                     }
                     if (!list.isEmpty())

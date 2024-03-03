@@ -5,8 +5,10 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,6 +17,7 @@ import android.provider.Settings;
 import android.util.Base64;
 import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -43,6 +46,7 @@ import com.example.complaintclose.javafiles.RetrofitClient;
 import com.example.complaintclose.javafiles.config_file;
 import com.example.complaintclose.javafiles.datapostmodule;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -91,10 +95,12 @@ public class secound_update_activity extends AppCompatActivity {
     TextView selectimage, imagepath;
 
     List<datapostmodule> postdatalist;
+    TextInputLayout seriallayout,itemqntylayout,itemlayout,grouplayout;
 
     String index, complainno, createdate, createtime, emailid, mobileno, partyid, tdsin, tdsout, partycode, descripation, brand, address, cityid, state, country;
 
     int CAMERA_PIC_REQUEST = 200;
+    boolean checkitem= false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -201,11 +207,14 @@ public class secound_update_activity extends AppCompatActivity {
         submitbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (imagepath.getText().toString().isEmpty()) {
+                if (!checkitem)
+                {
+                    Toast.makeText(secound_update_activity.this, "Upload the items details", Toast.LENGTH_SHORT).show();
+                }
+               else if (imagepath.getText().toString().isEmpty()) {
                     Toast.makeText(secound_update_activity.this, "Please select upload image", Toast.LENGTH_SHORT).show();
                 } else {
-                    getdatafromdynamic_layout();
+//                    getdatafromdynamic_layout();
                     uploaddatatodb();
                 }
 
@@ -224,15 +233,19 @@ public class secound_update_activity extends AppCompatActivity {
             public void onClick(View v) {
                 if (groupname.getText().toString().isEmpty())
                 {
-                    Toast.makeText(secound_update_activity.this, "Select Group name", Toast.LENGTH_SHORT).show();
+                    autoerrorShowFunction(grouplayout,groupname);
+
                 } else if (itemName.getText().toString().isEmpty()) {
-                    Toast.makeText(secound_update_activity.this, "Select Group name", Toast.LENGTH_SHORT).show();
+                    autoerrorShowFunction(itemlayout,itemName);
+
 
                 } else if (qntyno.getText().toString().isEmpty()) {
-                    Toast.makeText(secound_update_activity.this, "Select Group name", Toast.LENGTH_SHORT).show();
+                    errorShowFunction(itemqntylayout,qntyno);
+
 
                 } else if (serialNo.getText().toString().isEmpty()) {
-                    Toast.makeText(secound_update_activity.this, "Select Group name", Toast.LENGTH_SHORT).show();
+                    errorShowFunction(seriallayout,serialNo);
+
                 }
                 else {
 
@@ -244,6 +257,22 @@ public class secound_update_activity extends AppCompatActivity {
 
     }
 
+    void errorShowFunction(TextInputLayout layout, TextInputEditText text) {
+        layout.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
+        layout.setBoxStrokeErrorColor(ColorStateList.valueOf(Color.RED));
+        layout.setErrorTextColor(ColorStateList.valueOf(Color.RED));
+        layout.setError("Required*");
+        text.requestFocus();
+    }
+
+    void autoerrorShowFunction(TextInputLayout layout, AutoCompleteTextView text) {
+        layout.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
+        layout.setBoxStrokeErrorColor(ColorStateList.valueOf(Color.RED));
+        layout.setErrorTextColor(ColorStateList.valueOf(Color.RED));
+        layout.setError("Required*");
+        text.requestFocus();
+    }
+
     private void postdataonlygroupapi() {
         mProgressDialog.show();
 
@@ -251,6 +280,8 @@ public class secound_update_activity extends AppCompatActivity {
         class registration extends AsyncTask<String, String, String> {
             @Override
             protected void onPostExecute(String s) {
+
+                checkitem= true;
                 groupname.setText("");
                 itemName.setText("");
                 serialNo.setText("");

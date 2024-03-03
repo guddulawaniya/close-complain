@@ -1,5 +1,6 @@
 package com.example.complaintclose;
 
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -12,6 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.complaintclose.Adapters.complaintAdapter;
 import com.example.complaintclose.Adapters.complaintModule;
+import com.example.complaintclose.Sqlite_Files.Citynamedb;
+import com.example.complaintclose.Sqlite_Files.countrynamedb;
+import com.example.complaintclose.Sqlite_Files.partynamedb;
 import com.example.complaintclose.javafiles.config_file;
 
 import org.json.JSONArray;
@@ -32,6 +36,12 @@ public class Status_activity extends AppCompatActivity {
 
     ArrayList<complaintModule> list;
     LinearLayout progressBar;
+    partynamedb databaseManager;
+    Citynamedb citynamedb;
+    countrynamedb countrydb;
+
+
+    Cursor cursor;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,6 +52,11 @@ public class Status_activity extends AppCompatActivity {
         progressBar = findViewById(R.id.shimmereffect_layout);
         recyclerView = findViewById(R.id.statusRecyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // connection sqlite database
+        databaseManager = new partynamedb(this);
+        countrydb = new countrynamedb(this);
+        citynamedb = new Citynamedb(this);
 
         progressBar.setVisibility(View.GONE);
         list = new ArrayList<>();
@@ -72,9 +87,22 @@ public class Status_activity extends AppCompatActivity {
 
                         if (status == 0 && !compliant_no.isEmpty()) {
 
-                            String partyname = object1.getString("party_id");
+                            int party_id = object1.getInt("party_id");
                             String date = object1.getString("create_date");
                             String address = object1.getString("address");
+
+                            cursor = databaseManager.getdata();
+                            String partyname = null;
+
+                            if (cursor != null && cursor.moveToNext()) {
+                                do {
+                                    int userId = cursor.getInt(0);
+                                    if (userId == party_id) {
+                                        partyname = cursor.getString(1);
+                                    }
+                                } while (cursor.moveToNext());
+                                cursor.close();
+                            }
 
 
                             list.add(new complaintModule(compliant_no, date, partyname, address, status));
