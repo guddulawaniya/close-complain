@@ -3,11 +3,13 @@ package com.example.complaintclose;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,6 +38,8 @@ public class data_show extends AppCompatActivity {
 
     RecyclerView recyclerview;
     TextView  notfound;
+    SwipeRefreshLayout swipeRefreshLayout;
+    String complainid;
 
 
     @Override
@@ -50,13 +54,31 @@ public class data_show extends AppCompatActivity {
         list = new ArrayList<>();
 
          recyclerview = findViewById(R.id.recyclerview);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         notfound = findViewById(R.id.notfound);
        ImageView backarrow = findViewById(R.id.backarrow);
       notfound.setVisibility(View.GONE);
         Intent intent = getIntent();
-        String complainid = intent.getStringExtra("id");
+         complainid = intent.getStringExtra("id");
 
         postdataonlygroupapi(complainid);
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Your refresh action goes here
+                // For example, fetching new data from the server
+
+                // Simulate a delay for demonstration purposes
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Update the UI or perform any other actions after refreshing
+                        updateUI();
+                    }
+                }, 2000); // 2000 milliseconds (2 seconds) delay
+            }
+        });
 
         backarrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,8 +88,15 @@ public class data_show extends AppCompatActivity {
         });
 
     }
+
+    private void updateUI() {
+        postdataonlygroupapi(complainid);
+
+        swipeRefreshLayout.setRefreshing(false);
+    }
     private void postdataonlygroupapi(String complainnumber) {
         mProgressDialog.show();
+        list.clear();
 
         String registrationURL = config_file.Base_url+"get_item_details_close.php?complaint_id="+complainnumber;
         class registration extends AsyncTask<String, String, String> {
@@ -85,7 +114,8 @@ public class data_show extends AppCompatActivity {
                         String item_name = object.getString("item_name");
                         String item_qty = object.getString("item_qty");
                         String item_srno = object.getString("item_srno");
-                        list.add(new datashowmodule(i,groupname,item_name,item_qty,item_srno));
+                        int item_id = object.getInt("id");
+                        list.add(new datashowmodule(item_id,groupname,item_name,item_qty,item_srno));
 
                     }
                     if (!list.isEmpty())
@@ -123,11 +153,12 @@ public class data_show extends AppCompatActivity {
                 } catch (Exception ex) {
                     return ex.getMessage();
                 }
-
             }
 
         }
         registration obj = new registration();
         obj.execute(registrationURL);
     }
+
+
 }

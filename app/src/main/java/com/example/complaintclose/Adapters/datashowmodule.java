@@ -2,22 +2,22 @@ package com.example.complaintclose.Adapters;
 
 public class datashowmodule {
     String  groupname,itemName,qntyno, serialNo;
-    int index;
+    int id;
 
-    public datashowmodule(int index,String groupname, String itemName, String qntyno, String serialNo) {
-        this.index = index;
+    public datashowmodule(int id,String groupname, String itemName, String qntyno, String serialNo) {
+        this.id = id;
         this.groupname = groupname;
         this.itemName = itemName;
         this.qntyno = qntyno;
         this.serialNo = serialNo;
     }
 
-    public int getIndex() {
-        return index;
+    public int getId() {
+        return id;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getGroupname() {

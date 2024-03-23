@@ -8,6 +8,12 @@
     android:background="@color/white"
     tools:context=".MainActivity">
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:layout_width="match_parent"
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_height="match_parent">
+
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -97,10 +103,6 @@
             </com.google.android.material.tabs.TabLayout>
 
 
-            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:layout_width="match_parent"
-                android:id="@+id/swipeRefreshLayout"
-                android:layout_height="wrap_content">
                 <androidx.viewpager.widget.ViewPager
                     android:layout_width="match_parent"
                     android:id="@+id/viewpager"
@@ -112,8 +114,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tabLayout" />
-
-            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 
         </LinearLayout>
@@ -138,7 +138,7 @@
         </androidx.cardview.widget.CardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     <com.google.android.material.navigation.NavigationView
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

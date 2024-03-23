@@ -19,6 +19,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.complaintclose.R;
+import com.example.complaintclose.Roomdatabase.AppDatabase;
+import com.example.complaintclose.Roomdatabase.ItemDao;
+import com.example.complaintclose.Roomdatabase.notes;
 import com.example.complaintclose.complain_details_activity;
 import com.example.complaintclose.data_show;
 import com.example.complaintclose.javafiles.config_file;
@@ -38,6 +41,8 @@ public class datashowAdapter extends RecyclerView.Adapter<datashowAdapter.viewho
     ArrayList<datashowmodule> list;
     Context context;
     ProgressDialog mProgressDialog;
+    private AppDatabase database;
+    private ItemDao noteDao;
 
     public datashowAdapter(ArrayList list, Context context) {
         this.list = list;
@@ -47,17 +52,17 @@ public class datashowAdapter extends RecyclerView.Adapter<datashowAdapter.viewho
     @NonNull
     @Override
     public viewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.add_series_layout_list, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.showitem_layout_cards, parent, false);
         return new viewholder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull viewholder holder, int position) {
         datashowmodule module = list.get(position);
-        holder.qntyno.setText(module.getQntyno());
-        holder.serialNo.setText(module.getSerialNo());
-        holder.itemName.setText(module.getItemName());
-        holder.groupname.setText(module.getGroupname());
+        holder.groupname.setText("Group Name  : "+module.getGroupname());
+        holder.itemName.setText("Item Name     : "+module.getItemName());
+        holder.qntyno.setText("Item Quantity : "+module.getQntyno());
+        holder.serialNo.setText("Serial No        : "+module.getSerialNo());
         int index = position;
         index++;
         holder.indexing.setText(""+index);
@@ -66,7 +71,7 @@ public class datashowAdapter extends RecyclerView.Adapter<datashowAdapter.viewho
             @Override
             public void onClick(View v) {
 
-                deleteitem(holder.getAdapterPosition());
+                deleteitem(module.getId(),module.getItemName(),holder.getAdapterPosition());
             }
         });
     }
@@ -79,7 +84,7 @@ public class datashowAdapter extends RecyclerView.Adapter<datashowAdapter.viewho
     class viewholder extends RecyclerView.ViewHolder {
         TextView qntyno, serialNo,indexing;
         ImageView deletebutton;
-        AutoCompleteTextView itemName,groupname;
+        TextView itemName,groupname;
 
         public viewholder(@NonNull View itemView) {
             super(itemView);
@@ -97,19 +102,24 @@ public class datashowAdapter extends RecyclerView.Adapter<datashowAdapter.viewho
         }
     }
 
-    private void deleteitem(int deleteindex) {
+    private void deleteitem(int deleteindex,String itemname,int index) {
         mProgressDialog = new ProgressDialog(context);
         mProgressDialog.setTitle("Please Wait");
         mProgressDialog.setMessage("Loading..");
         mProgressDialog.show();
+        database = AppDatabase.getInstance(context);
+        noteDao = database.notesDao();
 
         String registrationURL = config_file.Base_url+"delete_item.php?deleteindex="+deleteindex;
         class registration extends AsyncTask<String, String, String> {
             @Override
             protected void onPostExecute(String s) {
                 mProgressDialog.dismiss();
-                list.remove(deleteindex);
-                notifyItemRemoved(deleteindex);
+                list.remove(index);
+                notifyItemRemoved(index);
+                notes note = new notes(itemname);
+                noteDao.delete(note);
+
 
                 Toast.makeText(context, "delete item Successfully", Toast.LENGTH_SHORT).show();
 

@@ -1,8 +1,9 @@
 package com.example.complaintclose.javafiles;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class datapostmodule {
+public class datapostmodule implements Serializable {
     String complainnumber,
             compliantid,
             party_id,

@@ -1,19 +1,30 @@
 package com.example.complaintclose;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.View;
 import android.view.animation.Animation;
@@ -31,6 +42,13 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -39,9 +57,15 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.complaintclose.Adapters.data_insert_module;
+import com.example.complaintclose.Adapters.datashowAdapter;
+import com.example.complaintclose.Adapters.datashowmodule;
+import com.example.complaintclose.Adapters.itemviewAdapter;
+import com.example.complaintclose.Roomdatabase.AppDatabase;
+import com.example.complaintclose.Roomdatabase.ItemDao;
+import com.example.complaintclose.Roomdatabase.notes;
 import com.example.complaintclose.javafiles.ApiService;
 import com.example.complaintclose.javafiles.ArrayData;
+import com.example.complaintclose.javafiles.ImageUploadTask;
 import com.example.complaintclose.javafiles.RetrofitClient;
 import com.example.complaintclose.javafiles.config_file;
 import com.example.complaintclose.javafiles.datapostmodule;
@@ -62,12 +86,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -77,14 +101,14 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 
-public class secound_update_activity extends AppCompatActivity {
+public class secound_update_activity extends AppCompatActivity  {
 
     CardView itemcard;
     Button prebutton, submitbutton;
     AutoCompleteTextView groupname, itemName;
     TextInputEditText serialNo, qntyno;
     ImageView backarrow;
-    LinearLayout addlinearlayout;
+    RecyclerView recyclerview;
 
     List<String> grouplist, itemlist;
     Bitmap bitmap;
@@ -93,14 +117,27 @@ public class secound_update_activity extends AppCompatActivity {
     ProgressDialog mProgressDialog;
     ArrayList<ArrayData> datalist;
     TextView selectimage, imagepath;
+    String imagePathstring;
 
     List<datapostmodule> postdatalist;
-    TextInputLayout seriallayout,itemqntylayout,itemlayout,grouplayout;
+    TextInputLayout seriallayout, itemqntylayout, itemlayout, grouplayout;
 
     String index, complainno, createdate, createtime, emailid, mobileno, partyid, tdsin, tdsout, partycode, descripation, brand, address, cityid, state, country;
 
     int CAMERA_PIC_REQUEST = 200;
-    boolean checkitem= false;
+    private static final int REQUEST_GALLERY = 1;
+
+    private static final String TAG = "ImageUploadProgress";
+    private static final String CHANNEL_ID = "MyNotificationChannel";
+    private static final int NOTIFICATION_ID = 1;
+
+    static Context context;
+    private AppDatabase database;
+    private ItemDao noteDao;
+
+    NotificationHelper notificationHelper;
+    SwipeRefreshLayout swipeRefreshLayout;
+    private static final int REQUEST_CODE = 101;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -113,14 +150,42 @@ public class secound_update_activity extends AppCompatActivity {
         submitbutton = findViewById(R.id.saveButton);
         backarrow = findViewById(R.id.backarrow);
         selectimage = findViewById(R.id.select_image);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         imagepath = findViewById(R.id.imageulr_path);
-        addlinearlayout = findViewById(R.id.addlinearlayout);
+        recyclerview = findViewById(R.id.recyclerview);
         serialNo = findViewById(R.id.serialNo);
         qntyno = findViewById(R.id.qntyno);
-       RelativeLayout deletelayout = findViewById(R.id.deletelayout);
-       deletelayout.setVisibility(View.GONE);
+        grouplayout = findViewById(R.id.grouplayout);
+        itemcard = findViewById(R.id.itemcard);
+        itemlayout = findViewById(R.id.itemlayout);
+        itemqntylayout = findViewById(R.id.itemqntylayout);
+        seriallayout = findViewById(R.id.seriallayout);
+        LinearLayout   imageuploadlinear = findViewById(R.id.imageuploadlinear);
+        RelativeLayout deletelayout = findViewById(R.id.deletelayout);
+        deletelayout.setVisibility(View.GONE);
 
+        notificationHelper = new NotificationHelper(this);
 
+        database = AppDatabase.getInstance(this);
+        noteDao = database.notesDao();
+        recyclerview.setLayoutManager(new LinearLayoutManager(this));
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getdataofitems(complainno);
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+        noteDao.getAlldata().observe(secound_update_activity.this, new Observer<List<notes>>() {
+            @Override
+            public void onChanged(List<notes> notes) {
+                Collections.reverse(notes);
+
+                itemviewAdapter adapter = new itemviewAdapter(notes);
+                recyclerview.setAdapter(adapter);
+
+            }
+        });
 
         grouplist = new ArrayList<>();
         itemlist = new ArrayList<>();
@@ -150,13 +215,10 @@ public class secound_update_activity extends AppCompatActivity {
         index = preferences.getString("index", null);
 
 
-
-
-
         // inflate the dynamic layout of card
 //        additemfor_series_number();
         groupname = findViewById(R.id.groupname);
-        itemName =  findViewById(R.id.itemName);
+        itemName = findViewById(R.id.itemName);
 
         ArrayAdapter<String> groupadapter = new ArrayAdapter<>(this, R.layout.list_layout, grouplist);
         groupname.setDropDownBackgroundResource(R.color.dialog_bg);
@@ -172,11 +234,16 @@ public class secound_update_activity extends AppCompatActivity {
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setTitle("Please Wait");
         mProgressDialog.setMessage("Loading..");
+        getdataofitems(complainno);
 
-        getdropdowndata(config_file.Base_url + "getgroupname.php", grouplist,false);
-        getdropdowndata(config_file.Base_url + "getitemname.php", itemlist,true);
+        getdropdowndata(config_file.Base_url + "getgroupname.php", grouplist, false);
+        getdropdowndata(config_file.Base_url + "getitemname.php", itemlist, true);
 
 
+        autotextwatcher(groupname,grouplayout);
+        autotextwatcher(itemName,itemlayout);
+        textwatcher(qntyno,itemqntylayout);
+        textwatcher(serialNo,seriallayout);
 
         backarrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,8 +257,8 @@ public class secound_update_activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent1 = new Intent(secound_update_activity.this,data_show.class);
-                intent1.putExtra("id",complainno);
+                Intent intent1 = new Intent(secound_update_activity.this, data_show.class);
+                intent1.putExtra("id", complainno);
                 startActivity(intent1);
 
             }
@@ -207,15 +274,26 @@ public class secound_update_activity extends AppCompatActivity {
         submitbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!checkitem)
+                if (viewitem.getVisibility()==View.GONE)
                 {
-                    Toast.makeText(secound_update_activity.this, "Upload the items details", Toast.LENGTH_SHORT).show();
+
+                    itemcard.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
+                    Toast.makeText(secound_update_activity.this, "Please the Prodcut Items", Toast.LENGTH_SHORT).show();
                 }
                else if (imagepath.getText().toString().isEmpty()) {
+                    imageuploadlinear.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
+
                     Toast.makeText(secound_update_activity.this, "Please select upload image", Toast.LENGTH_SHORT).show();
                 } else {
 //                    getdatafromdynamic_layout();
-                    uploaddatatodb();
+//                    uploaddatatodb();
+                    datapostmodule datapostmodule = new datapostmodule(complainno, index, partyid, brand, partycode, cityid, state, emailid, mobileno, descripation, datalist);
+                    Intent intent = new Intent(secound_update_activity.this, DataUploadIntentService.class);
+                    intent.putExtra("image",encodeImageString );
+                    intent.putExtra("datamodule",datapostmodule );
+                    startService(intent);
+
+                    closedialog();
                 }
 
             }
@@ -231,25 +309,23 @@ public class secound_update_activity extends AppCompatActivity {
         addbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (groupname.getText().toString().isEmpty())
-                {
-                    autoerrorShowFunction(grouplayout,groupname);
+                if (groupname.getText().toString().isEmpty()) {
+                    autoerrorShowFunction(grouplayout, groupname);
 
                 } else if (itemName.getText().toString().isEmpty()) {
-                    autoerrorShowFunction(itemlayout,itemName);
-
+                    autoerrorShowFunction(itemlayout, itemName);
 
                 } else if (qntyno.getText().toString().isEmpty()) {
-                    errorShowFunction(itemqntylayout,qntyno);
+                    errorShowFunction(itemqntylayout, qntyno);
 
 
                 } else if (serialNo.getText().toString().isEmpty()) {
-                    errorShowFunction(seriallayout,serialNo);
+                    errorShowFunction(seriallayout, serialNo);
 
-                }
-                else {
+                } else {
 
-                    postdataonlygroupapi();
+
+                    uploaditem_details();
                 }
 
             }
@@ -257,12 +333,79 @@ public class secound_update_activity extends AppCompatActivity {
 
     }
 
+
+    void chooseimageselect()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose Image Source");
+        builder.setItems(new CharSequence[]{"Gallery", "Camera"}, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        openGallery();
+                        break;
+                    case 1:
+                        openCamera();
+                        break;
+                }
+            }
+        });
+        builder.show();
+    }
+
+
     void errorShowFunction(TextInputLayout layout, TextInputEditText text) {
         layout.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
         layout.setBoxStrokeErrorColor(ColorStateList.valueOf(Color.RED));
         layout.setErrorTextColor(ColorStateList.valueOf(Color.RED));
         layout.setError("Required*");
         text.requestFocus();
+    }
+
+    void textwatcher(TextInputEditText text,TextInputLayout textInputLayout)
+    {
+        text.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                textInputLayout.setErrorEnabled(false);
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
+    }
+    void autotextwatcher(AutoCompleteTextView text,TextInputLayout textInputLayout)
+    {
+        text.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                textInputLayout.setErrorEnabled(false);
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
     }
 
     void autoerrorShowFunction(TextInputLayout layout, AutoCompleteTextView text) {
@@ -273,20 +416,26 @@ public class secound_update_activity extends AppCompatActivity {
         text.requestFocus();
     }
 
-    private void postdataonlygroupapi() {
-        mProgressDialog.show();
+    private void uploaditem_details() {
+        notificationHelper.showProgressNotification(secound_update_activity.this, "Item Uploading");
 
-        String registrationURL = config_file.Base_url+"item_details_close.php?complainnumber="+complainno+"&group="+groupname.getText().toString()+"&itemname="+itemName.getText().toString()+"&qty="+qntyno.getText().toString()+"&srno="+serialNo.getText().toString();
+        String registrationURL = config_file.Base_url + "item_details_close.php?complainnumber=" + complainno + "&group=" + groupname.getText().toString() + "&itemname=" + itemName.getText().toString() + "&qty=" + qntyno.getText().toString() + "&srno=" + serialNo.getText().toString();
+        String itemdata = itemName.getText().toString();
+        notes note = new notes(itemdata);
+        noteDao.insert(note);
+        groupname.setText("");
+        itemName.setText("");
+        serialNo.setText("");
+        qntyno.setText("");
         class registration extends AsyncTask<String, String, String> {
             @Override
             protected void onPostExecute(String s) {
 
-                checkitem= true;
-                groupname.setText("");
-                itemName.setText("");
-                serialNo.setText("");
-                qntyno.setText("");
+                notificationHelper.updateprogressbar(secound_update_activity.this, "item Uploaded");
+
+
                 mProgressDialog.dismiss();
+                viewitem.setVisibility(View.VISIBLE);
 
                 Toast.makeText(secound_update_activity.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show();
 
@@ -313,46 +462,46 @@ public class secound_update_activity extends AppCompatActivity {
         obj.execute(registrationURL);
     }
 
-    void closedialog(String response)
-    {
+    void closedialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(secound_update_activity.this);
 
-        builder.setMessage(response);
+        builder.setMessage("Your Complain In Progress Please Check Your Notification..");
 
-        builder.setTitle("Complaint");
+        builder.setTitle("Complain Close");
+
 
         builder.setCancelable(false);
 
 
-        builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
+        builder.setPositiveButton("Okay", (DialogInterface.OnClickListener) (dialog, which) -> {
             Intent intent1 = new Intent(secound_update_activity.this, MainActivity.class);
             (secound_update_activity.this).finish();
             intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_HISTORY);
             startActivity(intent1);
 
         });
-        AlertDialog  alertDialog = builder.create();
+        AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
 
-    void getdatafromdynamic_layout() {
-        int count = addlinearlayout.getChildCount();
-        for (int i = 0; i < count; i++) {
-            View itemlayout = addlinearlayout.getChildAt(i);
-            TextView groupfield = itemlayout.findViewById(R.id.groupname);
-            TextView itemname = itemlayout.findViewById(R.id.itemName);
-            TextView qntyno = itemlayout.findViewById(R.id.qntyno);
-            TextView serialno = itemlayout.findViewById(R.id.serialNo);
-
-
-            String gpdata = groupfield.getText().toString();
-            String itdata = itemname.getText().toString();
-            String qntydata = qntyno.getText().toString();
-            String serialdata = serialno.getText().toString();
-            datalist.add(new ArrayData(gpdata, itdata, qntydata, serialdata));
-
-        }
-    }
+//    void getdatafromdynamic_layout() {
+//        int count = addlinearlayout.getChildCount();
+//        for (int i = 0; i < count; i++) {
+//            View itemlayout = addlinearlayout.getChildAt(i);
+//            TextView groupfield = itemlayout.findViewById(R.id.groupname);
+//            TextView itemname = itemlayout.findViewById(R.id.itemName);
+//            TextView qntyno = itemlayout.findViewById(R.id.qntyno);
+//            TextView serialno = itemlayout.findViewById(R.id.serialNo);
+//
+//
+//            String gpdata = groupfield.getText().toString();
+//            String itdata = itemname.getText().toString();
+//            String qntydata = qntyno.getText().toString();
+//            String serialdata = serialno.getText().toString();
+//            datalist.add(new ArrayData(gpdata, itdata, qntydata, serialdata));
+//
+//        }
+//    }
 
     private void animateDuplicateView(View view) {
         // ViewPropertyAnimator example (translation animation)
@@ -368,29 +517,26 @@ public class secound_update_activity extends AppCompatActivity {
         view.startAnimation(animation);
     }
 
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, REQUEST_GALLERY);
+    }
 
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, CAMERA_PIC_REQUEST);
+    }
 
     private void camerapermission() {
-        // below line is use to request permission in the current activity.
-        // this method is use to handle error in runtime permissions
         Dexter.withActivity(this)
-                // below line is use to request the number of permissions which are required in our app.
-                .withPermissions(android.Manifest.permission.CAMERA)
-                // after adding permissions we are calling an with listener method.
+                .withPermissions(android.Manifest.permission.CAMERA,Manifest.permission.POST_NOTIFICATIONS)
                 .withListener(new MultiplePermissionsListener() {
                     @Override
                     public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
-                        // this method is called when all permissions are granted
                         if (multiplePermissionsReport.areAllPermissionsGranted()) {
 
-                            Intent intent = new Intent(Intent.ACTION_PICK);
+                            chooseimageselect();
 
-                            intent.setType("image/*");
-                            startActivityForResult(Intent.createChooser(intent, "Browse Image"), CAMERA_PIC_REQUEST);
-
-
-//                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                            startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
                         }
                         // check for permanent denial of any permission
                         if (multiplePermissionsReport.isAnyPermissionPermanentlyDenied()) {
@@ -435,29 +581,78 @@ public class secound_update_activity extends AppCompatActivity {
         builder.show();
     }
 
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == CAMERA_PIC_REQUEST && resultCode == RESULT_OK) {
-            Uri filepath = data.getData();
-            try {
-                InputStream inputStream = getContentResolver().openInputStream(filepath);
-                bitmap = BitmapFactory.decodeStream(inputStream);
-                String imagePath = saveImageToExternalStorage(bitmap);
-                imagepath.setText(imagePath);
-                encodeBitmapImage(bitmap);
-            } catch (Exception ex) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_GALLERY && data != null) {
+                Uri selectedImageUri = data.getData();
+                encoder(selectedImageUri);
+
 
             }
+
+            else if (requestCode == CAMERA_PIC_REQUEST && data != null) {
+
+                Bitmap photo = (Bitmap) data.getExtras().get("data");
+                Uri cameraImageUri = getImageUri(secound_update_activity.this, photo);
+                encoder(cameraImageUri);
+
+            }
+
         }
-        super.onActivityResult(requestCode, resultCode, data);
+
+
     }
 
+    private Uri getImageUri(Activity inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
+    }
+
+    void encoder(Uri filepath)
+    {
+        try {
+
+            // Display the selected image using an ImageView
+            InputStream inputStream = getContentResolver().openInputStream(filepath);
+            bitmap = BitmapFactory.decodeStream(inputStream);
+            imagePathstring = saveImageToExternalStorage(bitmap);
+            imagepath.setText(imagePathstring);
+            encodeBitmapImage(bitmap);
+        } catch (Exception ex) {
+
+        }
+
+    }
+
+    private String getRealPathFromURI(Uri uri) {
+        String filePath = null;
+        String[] projection = {MediaStore.Images.Media.DATA};
+
+        try (Cursor cursor = getContentResolver().query(uri, projection, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                filePath = cursor.getString(columnIndex);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return filePath;
+    }
     private void encodeBitmapImage(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
         byte[] bytesofimage = byteArrayOutputStream.toByteArray();
         encodeImageString = android.util.Base64.encodeToString(bytesofimage, Base64.DEFAULT);
     }
+
+
 
 
     private String saveImageToExternalStorage(Bitmap imageBitmap) {
@@ -491,15 +686,72 @@ public class secound_update_activity extends AppCompatActivity {
     }
 
 
-    private void getdropdowndata(String registrationURL, List<String> list,boolean check) {
+    private void getdataofitems(String complainnumber) {
+        mProgressDialog.show();
+
+        String registrationURL = config_file.Base_url+"get_item_details_close.php?complaint_id ="+complainnumber;
+        class registration extends AsyncTask<String, String, String> {
+            @Override
+            protected void onPostExecute(String s) {
+                mProgressDialog.dismiss();
+                noteDao.deleteAllUsers();
+
+                try {
+                    JSONArray jsonArray = new JSONArray(s);
+                    int arrlenght = jsonArray.length();
+                    if (arrlenght>-1)
+                    {
+                        viewitem.setVisibility(View.VISIBLE);
+                    }
+                    for (int i=0;i< jsonArray.length();i++)
+                    {
+                        JSONObject object = jsonArray.getJSONObject(i);
+                        String item_name = object.getString("item_name");
+                        notes note = new notes(item_name);
+                        noteDao.insert(note);
+
+                    }
+
+
+
+
+                } catch (JSONException e) {
+                    mProgressDialog.dismiss();
+                    Toast.makeText(secound_update_activity.this, "Something Went Wrong", Toast.LENGTH_SHORT).show();
+                }
+
+
+
+                super.onPostExecute(s);
+            }
+
+            @Override
+            protected String doInBackground(String... param) {
+
+                try {
+                    URL url = new URL(param[0]);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    return br.readLine();
+                } catch (Exception ex) {
+                    return ex.getMessage();
+                }
+
+            }
+
+        }
+        registration obj = new registration();
+        obj.execute(registrationURL);
+    }
+
+    private void getdropdowndata(String registrationURL, List<String> list, boolean check) {
         mProgressDialog.show();
 
         class registration extends AsyncTask<String, String, String> {
             @Override
             protected void onPostExecute(String s) {
 
-                if (check)
-                {
+                if (check) {
                     mProgressDialog.dismiss();
                 }
 
@@ -543,10 +795,8 @@ public class secound_update_activity extends AppCompatActivity {
 
     }
 
-    void senddataonserver()
-    {
-        mProgressDialog.show();
-        datapostmodule datapostmodule = new datapostmodule(complainno,index,partyid,brand,partycode,cityid,state,emailid,mobileno,descripation,datalist);
+    void senddataonserver() {
+        datapostmodule datapostmodule = new datapostmodule(complainno, index, partyid, brand, partycode, cityid, state, emailid, mobileno, descripation, datalist);
 
         ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
 
@@ -558,9 +808,9 @@ public class secound_update_activity extends AppCompatActivity {
 
                 if (response.isSuccessful()) {
 
-                    mProgressDialog.dismiss();
+                    notificationHelper.updateprogressbar(secound_update_activity.this,"Upload Complain");
                     Toast.makeText(secound_update_activity.this, "Successfully Close Complaint", Toast.LENGTH_SHORT).show();
-                    closedialog(response.message().toString());
+//                    closedialog(response.message().toString());
                 } else {
                     // Handle error
                 }
@@ -574,68 +824,8 @@ public class secound_update_activity extends AppCompatActivity {
         });
     }
 
-
-    private void postDataUsingVolley() {
-        String url = config_file.Base_url + "closecomplaint.php";
-
-        long currentTimeMillis = System.currentTimeMillis();
-        Date currentDate = new Date(currentTimeMillis);
-        LocalDate dates = LocalDate.now();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        String currentTime = dateFormat.format(currentDate);
-
-
-        RequestQueue queue = Volley.newRequestQueue(secound_update_activity.this);
-
-        StringRequest request = new StringRequest(Request.Method.POST, url, new com.android.volley.Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
-                mProgressDialog.dismiss();
-                Toast.makeText(secound_update_activity.this, "Successfully Close Complaint", Toast.LENGTH_SHORT).show();
-//                closedialog();
-            }
-        }, new com.android.volley.Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                mProgressDialog.dismiss();
-//                Toast.makeText(secound_update_activity.this, "Please try again something went wrong", Toast.LENGTH_SHORT).show();
-                Toast.makeText(secound_update_activity.this, error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-            }
-
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("compliantnumber", mobileno);
-                params.put("compliantid", index);
-                params.put("party_id", partyid);
-                params.put("brand_name", brand);
-                params.put("party_code", partycode);
-                params.put("cityid", cityid);
-                params.put("state", state);
-                params.put("email", emailid);
-                params.put("phone", mobileno);
-                params.put("description", descripation);
-                params.put("under", datalist.toString());
-//                params.put("party_address", address);
-//                params.put("date_s", createdate);
-//                params.put("time_s", createtime);
-//                params.put("under", descripation);
-//                params.put("TDS_IN", tdsin);
-//                params.put("TDS_OUT", tdsout);
-//                params.put("DATE", String.valueOf(dates));
-//                params.put("TIME", currentTime);
-                return params;
-            }
-        };
-        queue.add(request);
-    }
-
     private void uploaddatatodb() {
-
-        mProgressDialog.show();
+        notificationHelper.showProgressNotification(secound_update_activity.this,"Upload Complain");
         StringRequest request = new StringRequest(Request.Method.POST, config_file.Base_url + "imageupload.php", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -646,9 +836,11 @@ public class secound_update_activity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+
                 Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
             }
-        }) {
+        })
+        {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> map = new HashMap<String, String>();
@@ -656,7 +848,9 @@ public class secound_update_activity extends AppCompatActivity {
                 return map;
             }
         };
+
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
         queue.add(request);
     }
+
 }
