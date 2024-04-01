@@ -20,7 +20,7 @@ public class NotificationHelper {
     private static final int maxprogress = 100;
 
 
-    private NotificationManagerCompat notificationManager;
+    private final NotificationManagerCompat notificationManager;
 
     public NotificationHelper(Context context) {
         notificationManager = NotificationManagerCompat.from(context);

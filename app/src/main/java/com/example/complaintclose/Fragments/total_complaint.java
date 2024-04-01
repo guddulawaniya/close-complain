@@ -11,17 +11,19 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.complaintclose.Adapters.complaintAdapter;
-import com.example.complaintclose.R;
 import com.example.complaintclose.Adapters.complaintModule;
+import com.example.complaintclose.R;
 import com.example.complaintclose.Sqlite_Files.Insertdata_partyname_sqlite;
 import com.example.complaintclose.Sqlite_Files.partynamedb;
-import com.example.complaintclose.javafiles.InternetConnection;
+import com.example.complaintclose.javafiles.NetworkUtils;
 import com.example.complaintclose.javafiles.config_file;
 
 import org.json.JSONArray;
@@ -40,26 +42,30 @@ public class total_complaint extends Fragment {
     ArrayList<complaintModule> list;
     RecyclerView recyclerView;
     LinearLayout progressBar;
-    InternetConnection internetConnection;
     partynamedb databaseManager;
     Insertdata_partyname_sqlite insertdatatablefile;
+    SwipeRefreshLayout swipeRefreshLayout;
 
     Cursor cursor;
+    ConstraintLayout animationView;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.fragment_total_complaint, container, false);
+
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+        animationView = view.findViewById(R.id.nointernet);
+        animationView.setVisibility(View.GONE);
+
+
         list = new ArrayList<>();
         recyclerView = view.findViewById(R.id.totalcomplaintRecyclerview);
         progressBar = view.findViewById(R.id.shimmereffect_layout);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         progressBar.setVisibility(View.GONE);
 
-        // internet connnection
-        internetConnection = new InternetConnection(getContext());
 
         // connection sqlite database
         databaseManager = new partynamedb(getContext());
@@ -74,32 +80,38 @@ public class total_complaint extends Fragment {
 
         progressBar.setVisibility(View.GONE);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
+        getallData();
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            refreshData();
 
-                internetConnection = new InternetConnection(getContext());
-            }
-        }, 2000);
-
-        if (internetConnection.isConnected())
-        {
-            progressBar.setVisibility(View.GONE);
-            getallData();
-        }else {
-            progressBar.setVisibility(View.VISIBLE);
-            Toast.makeText(getContext(), "Check your Internet Connection", Toast.LENGTH_SHORT).show();
-        }
+        });
 
 
         return view;
     }
+    private void refreshData() {
+        new android.os.Handler().postDelayed(() -> {
+
+            getallData();
+            swipeRefreshLayout.setRefreshing(false);
+        }, 2000); // 2000 milliseconds = 2 seconds (adjust as needed)
+    }
+
     private void getallData() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
+        animationView.setVisibility(View.GONE);
 
-        SharedPreferences preferences = getContext().getSharedPreferences("postdata",getContext().MODE_PRIVATE);
-        String mobile = preferences.getString("number",null);
+        if (!NetworkUtils.isNetworkAvailable(getContext())) {
+            progressBar.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
+            animationView.setVisibility(View.VISIBLE);
+//                Toast.makeText(getContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        SharedPreferences preferences = getContext().getSharedPreferences("postdata", getContext().MODE_PRIVATE);
+        String mobile = preferences.getString("number", null);
 
 
         String registrationURL = config_file.Base_url + "getcomplaint.php";
@@ -114,15 +126,13 @@ public class total_complaint extends Fragment {
                     JSONArray object = new JSONArray(s);
 
 
-
                     for (int i = 0; i < object.length(); ++i) {
 
                         JSONObject object1 = object.getJSONObject(i);
                         String compliant_no = object1.getString("compliant_no");
                         int status = object1.getInt("status");
 
-                        if (!compliant_no.isEmpty())
-                        {
+                        if (!compliant_no.isEmpty()) {
 
                             int party_id = object1.getInt("party_id");
                             String createDate = object1.getString("create_date");
@@ -150,9 +160,9 @@ public class total_complaint extends Fragment {
                                 cursor.close();
                             }
 
-                            list.add(new complaintModule(compliant_no, createDate,createtime, partyname, address, emailid,mobileno,brand,
-                                    partycode,complainreason , city , state , country
-                                    , status ));
+                            list.add(new complaintModule(compliant_no, createDate, createtime, partyname, address, emailid, mobileno, brand,
+                                    partycode, complainreason, city, state, country
+                                    , status));
 
                             complaintAdapter adapter = new complaintAdapter(list, getContext());
                             recyclerView.setAdapter(adapter);

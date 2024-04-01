@@ -26,6 +26,7 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -35,6 +36,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +44,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -66,6 +69,7 @@ import com.example.complaintclose.Roomdatabase.notes;
 import com.example.complaintclose.javafiles.ApiService;
 import com.example.complaintclose.javafiles.ArrayData;
 import com.example.complaintclose.javafiles.ImageUploadTask;
+import com.example.complaintclose.javafiles.NetworkUtils;
 import com.example.complaintclose.javafiles.RetrofitClient;
 import com.example.complaintclose.javafiles.config_file;
 import com.example.complaintclose.javafiles.datapostmodule;
@@ -114,7 +118,7 @@ public class secound_update_activity extends AppCompatActivity  {
     Bitmap bitmap;
     TextView viewitem;
     String encodeImageString;
-    ProgressDialog mProgressDialog;
+    ProgressBar mProgressDialog;
     ArrayList<ArrayData> datalist;
     TextView selectimage, imagepath;
     String imagePathstring;
@@ -139,12 +143,18 @@ public class secound_update_activity extends AppCompatActivity  {
     SwipeRefreshLayout swipeRefreshLayout;
     private static final int REQUEST_CODE = 101;
 
+    ConstraintLayout nointernet;
+    LinearLayout linearLayout1,linearLayout2;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.secount_activity_layout);
 
         TextView addbutton = findViewById(R.id.additembutton);
+        nointernet = findViewById(R.id.nointernet);
+        linearLayout2 = findViewById(R.id.linearLayout2);
+        linearLayout1 = findViewById(R.id.linearlayout1);
         viewitem = findViewById(R.id.viewbutton);
         prebutton = findViewById(R.id.prebutton);
         submitbutton = findViewById(R.id.saveButton);
@@ -158,6 +168,7 @@ public class secound_update_activity extends AppCompatActivity  {
         grouplayout = findViewById(R.id.grouplayout);
         itemcard = findViewById(R.id.itemcard);
         itemlayout = findViewById(R.id.itemlayout);
+        mProgressDialog = findViewById(R.id.progressBar);
         itemqntylayout = findViewById(R.id.itemqntylayout);
         seriallayout = findViewById(R.id.seriallayout);
         LinearLayout   imageuploadlinear = findViewById(R.id.imageuploadlinear);
@@ -172,6 +183,7 @@ public class secound_update_activity extends AppCompatActivity  {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+
                 getdataofitems(complainno);
                 swipeRefreshLayout.setRefreshing(false);
             }
@@ -230,10 +242,6 @@ public class secound_update_activity extends AppCompatActivity  {
         itemName.setAdapter(itemadapter);
 
 
-        // loader dialog box
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setTitle("Please Wait");
-        mProgressDialog.setMessage("Loading..");
         getdataofitems(complainno);
 
         getdropdowndata(config_file.Base_url + "getgroupname.php", grouplist, false);
@@ -323,7 +331,6 @@ public class secound_update_activity extends AppCompatActivity  {
                     errorShowFunction(seriallayout, serialNo);
 
                 } else {
-
 
                     uploaditem_details();
                 }
@@ -433,8 +440,6 @@ public class secound_update_activity extends AppCompatActivity  {
 
                 notificationHelper.updateprogressbar(secound_update_activity.this, "item Uploaded");
 
-
-                mProgressDialog.dismiss();
                 viewitem.setVisibility(View.VISIBLE);
 
                 Toast.makeText(secound_update_activity.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show();
@@ -687,47 +692,54 @@ public class secound_update_activity extends AppCompatActivity  {
 
 
     private void getdataofitems(String complainnumber) {
-        mProgressDialog.show();
+        mProgressDialog.setVisibility(View.VISIBLE);
+        nointernet.setVisibility(View.GONE);
 
-        String registrationURL = config_file.Base_url+"get_item_details_close.php?complaint_id ="+complainnumber;
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            mProgressDialog.setVisibility(View.GONE);
+            nointernet.setVisibility(View.VISIBLE);
+            linearLayout1.setVisibility(View.GONE);
+            linearLayout2.setVisibility(View.GONE);
+//                Toast.makeText(getContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String registrationURL = config_file.Base_url + "get_item_details_close.php?complaint_id=" + complainnumber;
+
         class registration extends AsyncTask<String, String, String> {
             @Override
             protected void onPostExecute(String s) {
-                mProgressDialog.dismiss();
+                mProgressDialog.setVisibility(View.GONE);
                 noteDao.deleteAllUsers();
-
                 try {
-                    JSONArray jsonArray = new JSONArray(s);
-                    int arrlenght = jsonArray.length();
-                    if (arrlenght>-1)
-                    {
-                        viewitem.setVisibility(View.VISIBLE);
+                    JSONObject jsonObject = new JSONObject(s);
+                    boolean status = jsonObject.getBoolean("status");
+                    if (status) {
+                        JSONArray dataarray = jsonObject.getJSONArray("data");
+                        int arrLength = dataarray.length();
+                        if (arrLength > 0) {
+                            viewitem.setVisibility(View.VISIBLE);
+                        }
+                        for (int i = 0; i < arrLength; i++) {
+                            JSONObject object = dataarray.getJSONObject(i);
+                            String item_name = object.getString("item_name");
+                            notes note = new notes(item_name);
+                            noteDao.insert(note);
+                        }
+                    } else {
+                        // Handle the case when status is false
+                        Toast.makeText(secound_update_activity.this, "Do Not Have any data", Toast.LENGTH_SHORT).show();
                     }
-                    for (int i=0;i< jsonArray.length();i++)
-                    {
-                        JSONObject object = jsonArray.getJSONObject(i);
-                        String item_name = object.getString("item_name");
-                        notes note = new notes(item_name);
-                        noteDao.insert(note);
-
-                    }
-
-
-
-
                 } catch (JSONException e) {
-                    mProgressDialog.dismiss();
+                    mProgressDialog.setVisibility(View.GONE);
+                    Log.e("error", e.getMessage());
                     Toast.makeText(secound_update_activity.this, "Something Went Wrong", Toast.LENGTH_SHORT).show();
                 }
-
-
 
                 super.onPostExecute(s);
             }
 
             @Override
             protected String doInBackground(String... param) {
-
                 try {
                     URL url = new URL(param[0]);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -736,23 +748,32 @@ public class secound_update_activity extends AppCompatActivity  {
                 } catch (Exception ex) {
                     return ex.getMessage();
                 }
-
             }
-
         }
         registration obj = new registration();
         obj.execute(registrationURL);
     }
 
+
     private void getdropdowndata(String registrationURL, List<String> list, boolean check) {
-        mProgressDialog.show();
+        mProgressDialog.setVisibility(View.VISIBLE);
+        nointernet.setVisibility(View.GONE);
+
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            mProgressDialog.setVisibility(View.GONE);
+            nointernet.setVisibility(View.VISIBLE);
+            linearLayout1.setVisibility(View.GONE);
+            linearLayout2.setVisibility(View.GONE);
+//                Toast.makeText(getContext(), "No internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         class registration extends AsyncTask<String, String, String> {
             @Override
             protected void onPostExecute(String s) {
 
                 if (check) {
-                    mProgressDialog.dismiss();
+                    mProgressDialog.setVisibility(View.GONE);
                 }
 
                 try {
@@ -766,7 +787,7 @@ public class secound_update_activity extends AppCompatActivity  {
                     }
 
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Toast.makeText(secound_update_activity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
 
                 }
                 super.onPostExecute(s);

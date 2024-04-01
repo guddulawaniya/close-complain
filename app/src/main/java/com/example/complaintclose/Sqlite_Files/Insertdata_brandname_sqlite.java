@@ -2,10 +2,10 @@ package com.example.complaintclose.Sqlite_Files;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.view.View;
 import android.widget.Toast;
 
-
-import com.example.complaintclose.javafiles.InternetConnection;
+import com.example.complaintclose.javafiles.NetworkUtils;
 import com.example.complaintclose.javafiles.config_file;
 
 import org.json.JSONArray;
@@ -20,7 +20,6 @@ import java.net.URL;
 public class Insertdata_brandname_sqlite {
     Context context;
     brandnamedb databaseManager;
-    InternetConnection internetConnection;
 
     public Insertdata_brandname_sqlite(Context context) {
         this.context = context;
@@ -28,10 +27,12 @@ public class Insertdata_brandname_sqlite {
     }
 
     public void insertdatatable() {
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            return;
+        }
 
         databaseManager = new brandnamedb(context);
         String RegistrationURL = config_file.Base_url + "brand.php";
-        internetConnection = new InternetConnection(context);
         class registration extends AsyncTask<String, String, String> {
 
 
@@ -71,11 +72,7 @@ public class Insertdata_brandname_sqlite {
 
             }
         }
-        if (internetConnection.isConnected()) {
             registration obj = new registration();
             obj.execute(RegistrationURL);
-        } else {
-            Toast.makeText(context, "Check your internet Connection", Toast.LENGTH_SHORT).show();
-        }
     }
 }

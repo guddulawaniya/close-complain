@@ -5,7 +5,7 @@ import android.os.AsyncTask;
 import android.widget.Toast;
 
 
-import com.example.complaintclose.javafiles.InternetConnection;
+import com.example.complaintclose.javafiles.NetworkUtils;
 import com.example.complaintclose.javafiles.config_file;
 
 import org.json.JSONArray;
@@ -20,7 +20,6 @@ import java.net.URL;
 public class Insertdata_Cityname_sqlite {
     Context context;
     Citynamedb databaseManager;
-    InternetConnection internetConnection;
 
     public Insertdata_Cityname_sqlite(Context context) {
         this.context = context;
@@ -28,10 +27,12 @@ public class Insertdata_Cityname_sqlite {
     }
 
     public void insertdatatable() {
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            return;
+        }
 
         databaseManager = new Citynamedb(context);
         String RegistrationURL = config_file.Base_url + "getcity.php";
-        internetConnection = new InternetConnection(context);
         class registration extends AsyncTask<String, String, String> {
 
 
@@ -71,11 +72,7 @@ public class Insertdata_Cityname_sqlite {
 
             }
         }
-        if (internetConnection.isConnected()) {
-            registration obj = new registration();
-            obj.execute(RegistrationURL);
-        } else {
-            Toast.makeText(context, "Check your internet Connection", Toast.LENGTH_SHORT).show();
-        }
+        registration obj = new registration();
+        obj.execute(RegistrationURL);
     }
 }

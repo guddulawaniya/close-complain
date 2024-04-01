@@ -49,7 +49,7 @@ public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.view
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences.Editor editor= context.getSharedPreferences("postdata",context.MODE_PRIVATE).edit();
+                SharedPreferences.Editor editor= context.getSharedPreferences("postdata", Context.MODE_PRIVATE).edit();
                 editor.putString("index", String.valueOf(holder.getAbsoluteAdapterPosition()));
                 editor.commit();
                 Intent intent = new Intent(context, complain_details_activity.class);

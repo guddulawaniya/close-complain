@@ -1,93 +1,77 @@
 package com.example.complaintclose;
 
-import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
-import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Base64;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.complaintclose.javafiles.InternetConnection;
+import com.airbnb.lottie.LottieAnimationView;
+import com.example.complaintclose.javafiles.NetworkUtils;
 import com.example.complaintclose.javafiles.config_file;
 import com.example.complaintclose.javafiles.fetchdata_from_sqlite;
 import com.example.complaintclose.javafiles.fetchdata_from_sqlite_return_array;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.karumi.dexter.Dexter;
-import com.karumi.dexter.MultiplePermissionsReport;
-import com.karumi.dexter.PermissionToken;
-import com.karumi.dexter.listener.PermissionRequest;
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class close_complaint_Form_Activity extends AppCompatActivity {
 
 
-    List<String> itemlist,statelist ,brandlist,partynamelist,citylist ,complainlist;
+    List<String> itemlist, statelist, brandlist, partynamelist, citylist, complainlist;
 
-    InternetConnection internetConnection;
 
     AutoCompleteTextView partyname, state, city, brand, complain;
-    MaterialAutoCompleteTextView  createdate;
+    MaterialAutoCompleteTextView createdate;
     TextInputEditText address, TDS_IN, TDS_out, partycode, complainNo;
     TextInputLayout addresslayout, statelayout, tdsoutlayout, citylayout, descripationlayout, tdsinlayout, partynamelayout, brandlayout, partycodelayout, complainNolayout;
     Button submitbutton;
     ProgressDialog mProgressDialog;
 
-    String partynameindex, brandindex, countyindex, stateindex,createtime, cityindex,encodeImageString;
+    String partynameindex, brandindex, countyindex, stateindex, createtime, cityindex, encodeImageString;
 
     fetchdata_from_sqlite_return_array fetchdata_arrayform;
     fetchdata_from_sqlite fetchdata;
+    SwipeRefreshLayout swipeRefreshLayout;
+    LinearLayout linearLayout6;
+    ConstraintLayout nointernet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_complaint_form);
-        internetConnection = new InternetConnection(this);
 
+        linearLayout6 = findViewById(R.id.linearLayout6);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        nointernet = findViewById(R.id.nointernet);
         partycodelayout = findViewById(R.id.partycodelayout);
         partynamelayout = findViewById(R.id.partynamelayout);
         tdsinlayout = findViewById(R.id.tdsinlayout);
@@ -165,10 +149,10 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         });
 
         fetchdata = new fetchdata_from_sqlite(this);
-        if (internetConnection.isConnected() && id == 2) {
+        if (id == 2) {
+
 
             getSingledata_From_complain_number(complainNo.getText().toString());
-
         }
 
 
@@ -188,12 +172,13 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
             }
         });
 
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            refreshData();
 
+        });
 
 
         TextWatchercalls();
-
-
 
 
         fetchdata_arrayform.partysetdynamicdata(partynamelist);
@@ -235,10 +220,10 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 10) {
                     getSingledata_From_complain_number(complainNo.getText().toString());
-                } else if (s.length()==2) {
+                } else if (s.length() == 2) {
                     complainNo.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-                } else if (s.length()<2) {
+                } else if (s.length() < 2) {
                     complainNo.setInputType(InputType.TYPE_TEXT_VARIATION_NORMAL);
 
                 } else {
@@ -263,25 +248,30 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         });
 
     }
+    private void refreshData() {
+        new android.os.Handler().postDelayed(() -> {
 
-    void TextWatchercalls()
-    {
-        textwachterinput(complainNo,complainNolayout);
-        textwachterinput(partycode,partycodelayout);
-        textwachterinput(address,addresslayout);
-        textwachterinput(TDS_IN,tdsinlayout);
-        textwachterinput(TDS_out,tdsoutlayout);
+            recreate();
+            swipeRefreshLayout.setRefreshing(false);
+        }, 2000); // 2000 milliseconds = 2 seconds (adjust as needed)
+    }
 
-        textwachter(partyname,partynamelayout);
-        textwachter(brand,brandlayout);
-        textwachter(city,citylayout);
-        textwachter(state,statelayout);
-        textwachter(complain,descripationlayout);
+    void TextWatchercalls() {
+        textwachterinput(complainNo, complainNolayout);
+        textwachterinput(partycode, partycodelayout);
+        textwachterinput(address, addresslayout);
+        textwachterinput(TDS_IN, tdsinlayout);
+        textwachterinput(TDS_out, tdsoutlayout);
+
+        textwachter(partyname, partynamelayout);
+        textwachter(brand, brandlayout);
+        textwachter(city, citylayout);
+        textwachter(state, statelayout);
+        textwachter(complain, descripationlayout);
 
     }
 
-    void textwachter(AutoCompleteTextView autoCompleteTextView,TextInputLayout layout)
-    {
+    void textwachter(AutoCompleteTextView autoCompleteTextView, TextInputLayout layout) {
         autoCompleteTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -301,8 +291,8 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         });
 
     }
-    void textwachterinput(TextInputEditText inputEditText,TextInputLayout layout)
-    {
+
+    void textwachterinput(TextInputEditText inputEditText, TextInputLayout layout) {
         inputEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -323,8 +313,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
     }
 
-    void getdatafromtextfields()
-    {
+    void getdatafromtextfields() {
         if (complainNo.getText().toString().isEmpty()) {
             errorShowFunction(complainNolayout, complainNo);
         } else if (partycode.getText().toString().isEmpty()) {
@@ -345,14 +334,13 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
             errorShowFunction(tdsoutlayout, TDS_out);
         } else if (complain.getText().toString().isEmpty()) {
             autoerrorShowFunction(descripationlayout, complain);
-        }else {
+        } else {
 
-                   nextactivity();
+            nextactivity();
         }
     }
 
-    void nextactivity()
-    {
+    void nextactivity() {
         Intent intent1 = new Intent(close_complaint_Form_Activity.this, secound_update_activity.class);
         intent1.putExtra("complainno", complainNo.getText().toString());
         intent1.putExtra("createdate", complainNo.getText().toString());
@@ -370,6 +358,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         startActivity(intent1);
 
     }
+
     void errorShowFunction(TextInputLayout layout, TextInputEditText text) {
         layout.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
         layout.setBoxStrokeErrorColor(ColorStateList.valueOf(Color.RED));
@@ -388,6 +377,14 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
 
     private void getdropdowndata(String registrationURL, List<String> list) {
+        nointernet.setVisibility(View.GONE);
+
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+               nointernet.setVisibility(View.VISIBLE);
+               linearLayout6.setVisibility(View.GONE);
+               submitbutton.setVisibility(View.GONE);
+            return;
+        }
 
         class registration extends AsyncTask<String, String, String> {
             @Override
@@ -404,7 +401,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
                     }
 
                 } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                    Toast.makeText(close_complaint_Form_Activity.this, "something went Wrong Try Again ", Toast.LENGTH_SHORT).show();
 
                 }
                 super.onPostExecute(s);
@@ -437,6 +434,16 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         mProgressDialog.setTitle("Please Wait");
         mProgressDialog.setMessage("Loading..");
         mProgressDialog.show();
+
+        nointernet.setVisibility(View.GONE);
+
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            nointernet.setVisibility(View.VISIBLE);
+            linearLayout6.setVisibility(View.GONE);
+            submitbutton.setVisibility(View.GONE);
+            mProgressDialog.dismiss();
+            return;
+        }
 
         String registrationURL = config_file.Base_url + "get_complaint_data_by_id.php" + "?complaint_id=" + complainno;
 

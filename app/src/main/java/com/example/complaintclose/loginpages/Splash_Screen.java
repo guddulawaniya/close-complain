@@ -10,7 +10,6 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.complaintclose.javafiles.InternetConnection;
 import com.example.complaintclose.MainActivity;
 import com.example.complaintclose.R;
 
@@ -31,8 +30,6 @@ public class Splash_Screen extends AppCompatActivity {
 
         String number = preferences.getString("number",null);
 
-
-        InternetConnection nt = new InternetConnection(getApplicationContext());
 
 
         if (number!=null)

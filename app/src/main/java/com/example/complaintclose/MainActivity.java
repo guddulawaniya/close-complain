@@ -7,20 +7,16 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.complaintclose.Adapters.Tabs_complaintsAdapter;
-import com.example.complaintclose.javafiles.InternetConnection;
+import com.example.complaintclose.javafiles.NetworkUtils;
 import com.example.complaintclose.loginpages.login_Actvity;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,9 +26,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        InternetConnection internetConnection = new InternetConnection(this);
 
-        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
         CardView profile = findViewById(R.id.profile);
         TextView clientid = findViewById(R.id.clientid);
@@ -42,16 +36,6 @@ public class MainActivity extends AppCompatActivity {
         TextView termandcondition = findViewById(R.id.termandcondition);
         LinearLayout profilelayout = findViewById(R.id.profilelayout);
 
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            if (internetConnection.isConnected()) {
-                recreate();
-                swipeRefreshLayout.setRefreshing(false);
-            } else {
-                swipeRefreshLayout.setRefreshing(false);
-                Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show();
-            }
-
-        });
 
         profiledetails.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, close_complaint_Form_Activity.class);
-                intent.putExtra("id",1);
+                intent.putExtra("id", 1);
                 startActivity(intent);
 
             }
@@ -135,5 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 
 }

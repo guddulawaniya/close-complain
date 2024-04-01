@@ -37,9 +37,6 @@ public class complain_details_activity extends AppCompatActivity {
         cursor = citynamedb.getdata();
 
 
-
-
-
         Intent intent = getIntent();
         String complainno = intent.getStringExtra("comlainno");
         String status = String.valueOf(intent.getIntExtra("status", 0));
@@ -78,11 +75,11 @@ public class complain_details_activity extends AppCompatActivity {
         okaybutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 Intent intent1 = new Intent(complain_details_activity.this,close_complaint_Form_Activity.class);
                 intent1.putExtra("id",2);
                 intent1.putExtra("complainno",complainno);
                 startActivity(intent1);
-
 
             }
         });
