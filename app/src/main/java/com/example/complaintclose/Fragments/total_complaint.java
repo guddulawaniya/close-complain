@@ -1,5 +1,7 @@
 package com.example.complaintclose.Fragments;
 
+import static com.example.complaintclose.Fragments.current_complaint_Fragment.CHECK_REFRESH;
+
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -35,11 +37,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 
 public class total_complaint extends Fragment {
 
-    ArrayList<complaintModule> list;
+    List<complaintModule> list;
     RecyclerView recyclerView;
     LinearLayout progressBar;
     partynamedb databaseManager;
@@ -48,6 +53,7 @@ public class total_complaint extends Fragment {
 
     Cursor cursor;
     ConstraintLayout animationView;
+    ConstraintLayout nofounddata;
 
 
     @Override
@@ -58,6 +64,7 @@ public class total_complaint extends Fragment {
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
         animationView = view.findViewById(R.id.nointernet);
         animationView.setVisibility(View.GONE);
+        nofounddata = view.findViewById(R.id.nofounddata);
 
 
         list = new ArrayList<>();
@@ -80,14 +87,130 @@ public class total_complaint extends Fragment {
 
         progressBar.setVisibility(View.GONE);
 
-        getallData();
         swipeRefreshLayout.setOnRefreshListener(() -> {
             refreshData();
 
         });
 
+        current_complaint_Fragment.SharedPreferencesLoader sharedPreferencesLoader = new current_complaint_Fragment.SharedPreferencesLoader(getContext());
+        list = sharedPreferencesLoader.loadInBackground();
+        if (!list.isEmpty())
+        {
+            animationView.setVisibility(View.GONE);
+            complaintAdapter adapter = new complaintAdapter(list, getContext());
+            recyclerView.setAdapter(adapter);
+            if (NetworkUtils.isNetworkAvailable(getContext()))
+            {
+                getcomplaindataRefrsh();
+            }
+
+        }else getallData();
+
 
         return view;
+    }
+
+    private void getcomplaindataRefrsh() {
+
+
+        if (!NetworkUtils.isNetworkAvailable(getContext())) {
+            animationView.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        String registrationURL = config_file.Base_url + "getcomplaint.php";
+
+
+        class registration extends AsyncTask<String, String, String> {
+            @Override
+            protected void onPostExecute(String s) {
+                list.clear();
+
+                try {
+
+                    JSONObject jsonObject = new JSONObject(s);
+                    boolean statuscheck = jsonObject.getBoolean("status");
+
+                    if (!statuscheck) {
+                        nofounddata.setVisibility(View.VISIBLE);
+                        return;
+                    }
+
+                    JSONArray object = jsonObject.getJSONArray("data");
+                    for (int i = 0; i < object.length(); ++i) {
+                        JSONObject object1 = object.getJSONObject(i);
+                        int status = object1.getInt("status");
+                        String compliant_no = object1.getString("compliant_no");
+
+                        if (status == 0 && !compliant_no.isEmpty()) {
+                            int party_id = object1.getInt("party_id");
+                            String createDate = object1.getString("create_date");
+                            String createtime = object1.getString("create_time");
+                            String emailid = object1.getString("email");
+                            String address = object1.getString("address");
+                            String mobileno = object1.getString("phone");
+                            String brand = object1.getString("brand_id");
+                            String partycode = object1.getString("party_code");
+                            String complainreason = object1.getString("complaint");
+                            String city = object1.getString("city_id");
+                            String state = object1.getString("state");
+                            String country = object1.getString("country");
+
+                            cursor = databaseManager.getdata();
+                            String partyname = null;
+
+                            if (cursor != null && cursor.moveToNext()) {
+                                do {
+                                    int userId = cursor.getInt(0);
+                                    if (userId == party_id) {
+                                        partyname = cursor.getString(1);
+                                    }
+                                } while (cursor.moveToNext());
+                                cursor.close();
+                            }
+
+                            list.add(new complaintModule(compliant_no, createDate, createtime, partyname, address, emailid, mobileno, brand,
+                                    partycode, complainreason, city, state, country,
+                                    status));
+
+                            Collections.sort(list, new Comparator<complaintModule>() {
+                                @Override
+                                public int compare(complaintModule module1, complaintModule module2) {
+                                    return module1.getCompliant_no().substring(2).compareTo(module2.getCompliant_no().substring(2));
+                                }
+                            });
+                            Collections.reverse(list);
+                            complaintAdapter adapter = new complaintAdapter(list, getContext());
+                            recyclerView.setAdapter(adapter);
+
+
+                        }
+
+                    }
+                } catch (JSONException e) {
+                    progressBar.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+                }
+                super.onPostExecute(s);
+            }
+
+            @Override
+            protected String doInBackground(String... param) {
+
+                try {
+                    URL url = new URL(param[0]);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    return br.readLine();
+                } catch (Exception ex) {
+                    return ex.getMessage();
+                }
+
+            }
+        }
+        registration obj = new registration();
+        obj.execute(registrationURL);
     }
     private void refreshData() {
         new android.os.Handler().postDelayed(() -> {
@@ -122,9 +245,20 @@ public class total_complaint extends Fragment {
             @Override
             protected void onPostExecute(String s) {
 
-                try {
-                    JSONArray object = new JSONArray(s);
+                progressBar.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
 
+                try {
+                    JSONObject jsonObject = new JSONObject(s);
+
+                    boolean statuscheck = jsonObject.getBoolean("status");
+
+                    if (!statuscheck)
+                    {
+                        nofounddata.setVisibility(View.VISIBLE);
+                        return;
+                    }
+                    JSONArray object = jsonObject.getJSONArray("data");
 
                     for (int i = 0; i < object.length(); ++i) {
 
@@ -171,8 +305,7 @@ public class total_complaint extends Fragment {
 
 
                     }
-                    progressBar.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
+
 
                 } catch (JSONException e) {
                     progressBar.setVisibility(View.GONE);
@@ -204,6 +337,16 @@ public class total_complaint extends Fragment {
         obj.execute(registrationURL);
 
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (CHECK_REFRESH)
+        {
+            getcomplaindataRefrsh();
+        }
     }
 
 }

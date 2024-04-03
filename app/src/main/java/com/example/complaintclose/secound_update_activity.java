@@ -180,6 +180,8 @@ public class secound_update_activity extends AppCompatActivity  {
         database = AppDatabase.getInstance(this);
         noteDao = database.notesDao();
         recyclerview.setLayoutManager(new LinearLayoutManager(this));
+
+        swipeRefreshLayout.setEnabled(false);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -480,9 +482,11 @@ public class secound_update_activity extends AppCompatActivity  {
 
         builder.setPositiveButton("Okay", (DialogInterface.OnClickListener) (dialog, which) -> {
             Intent intent1 = new Intent(secound_update_activity.this, MainActivity.class);
-            (secound_update_activity.this).finish();
             intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_HISTORY);
             startActivity(intent1);
+            finish();
+            overridePendingTransition(R.anim.right_out, R.anim.left_in);
+
 
         });
         AlertDialog alertDialog = builder.create();
@@ -699,6 +703,7 @@ public class secound_update_activity extends AppCompatActivity  {
             mProgressDialog.setVisibility(View.GONE);
             nointernet.setVisibility(View.VISIBLE);
             linearLayout1.setVisibility(View.GONE);
+            swipeRefreshLayout.setEnabled(true);
             linearLayout2.setVisibility(View.GONE);
 //                Toast.makeText(getContext(), "No internet connection", Toast.LENGTH_SHORT).show();
             return;
@@ -712,6 +717,8 @@ public class secound_update_activity extends AppCompatActivity  {
                 noteDao.deleteAllUsers();
                 try {
                     JSONObject jsonObject = new JSONObject(s);
+
+
                     boolean status = jsonObject.getBoolean("status");
                     if (status) {
                         JSONArray dataarray = jsonObject.getJSONArray("data");
@@ -761,6 +768,7 @@ public class secound_update_activity extends AppCompatActivity  {
 
         if (!NetworkUtils.isNetworkAvailable(this)) {
             mProgressDialog.setVisibility(View.GONE);
+            swipeRefreshLayout.setEnabled(true);
             nointernet.setVisibility(View.VISIBLE);
             linearLayout1.setVisibility(View.GONE);
             linearLayout2.setVisibility(View.GONE);
@@ -778,7 +786,6 @@ public class secound_update_activity extends AppCompatActivity  {
 
                 try {
                     JSONArray object = new JSONArray(s);
-
 
                     for (int i = 0; i < object.length(); ++i) {
                         JSONObject object1 = object.getJSONObject(i);

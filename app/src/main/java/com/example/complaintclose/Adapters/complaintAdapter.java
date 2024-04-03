@@ -17,14 +17,15 @@ import com.example.complaintclose.R;
 import com.example.complaintclose.complain_details_activity;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.viewholder> {
 
-    ArrayList<complaintModule> list;
+    List<complaintModule> list;
     Context context;
 
 
-    public complaintAdapter(ArrayList list, Context context) {
+    public complaintAdapter(List list, Context context) {
         this.list = list;
         this.context = context;
     }

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.complaintclose.Adapters.complaintAdapter;
 import com.example.complaintclose.Adapters.complaintModule;
+import com.example.complaintclose.Fragments.current_complaint_Fragment;
 import com.example.complaintclose.Sqlite_Files.Citynamedb;
 import com.example.complaintclose.Sqlite_Files.countrynamedb;
 import com.example.complaintclose.Sqlite_Files.partynamedb;
@@ -27,6 +28,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class Status_activity extends AppCompatActivity {
@@ -34,7 +36,7 @@ public class Status_activity extends AppCompatActivity {
 
     RecyclerView recyclerView;
 
-    ArrayList<complaintModule> list;
+    List<complaintModule> list;
     LinearLayout progressBar;
     partynamedb databaseManager;
     Citynamedb citynamedb;
@@ -61,11 +63,15 @@ public class Status_activity extends AppCompatActivity {
         progressBar.setVisibility(View.GONE);
         list = new ArrayList<>();
 
-        logindata();
+
+        current_complaint_Fragment.SharedPreferencesLoader sharedPreferencesLoader = new current_complaint_Fragment.SharedPreferencesLoader(this);
+        list = sharedPreferencesLoader.loadInBackground();
+        complaintAdapter adapter = new complaintAdapter(list, Status_activity.this);
+        recyclerView.setAdapter(adapter);
 
     }
 
-    private void logindata() {
+    private void getdata() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
 
@@ -107,8 +113,7 @@ public class Status_activity extends AppCompatActivity {
 
                             list.add(new complaintModule(compliant_no, date, partyname, address, status));
 
-                            complaintAdapter adapter = new complaintAdapter(list, Status_activity.this);
-                            recyclerView.setAdapter(adapter);
+
 
                         }
 

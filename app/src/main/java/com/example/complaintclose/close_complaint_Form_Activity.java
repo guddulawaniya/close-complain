@@ -172,6 +172,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
             }
         });
 
+        swipeRefreshLayout.setEnabled(false);
         swipeRefreshLayout.setOnRefreshListener(() -> {
             refreshData();
 
@@ -378,11 +379,11 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
     private void getdropdowndata(String registrationURL, List<String> list) {
         nointernet.setVisibility(View.GONE);
-
         if (!NetworkUtils.isNetworkAvailable(this)) {
                nointernet.setVisibility(View.VISIBLE);
                linearLayout6.setVisibility(View.GONE);
                submitbutton.setVisibility(View.GONE);
+            swipeRefreshLayout.setEnabled(true);
             return;
         }
 
