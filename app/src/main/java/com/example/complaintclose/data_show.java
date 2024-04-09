@@ -100,8 +100,8 @@ public class data_show extends AppCompatActivity {
             return;
         }
 
-//        String registrationURL = config_file.Base_url+"get_item_details_close.php?complaint_id="+complainnumber;
-        String registrationURL = "https://dummy-crm.raghaw.in/api/get_item_details_close.php?complaint_id=SM20248";
+        String registrationURL = config_file.Base_url+"get_item_details_close.php?complaint_id="+complainnumber;
+//        String registrationURL = "https://dummy-crm.raghaw.in/api/get_item_details_close.php?complaint_id=SM20248";
         class registration extends AsyncTask<String, String, String> {
             @Override
             protected void onPostExecute(String s) {
