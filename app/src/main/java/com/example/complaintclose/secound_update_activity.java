@@ -3,14 +3,10 @@ package com.example.complaintclose;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -18,7 +14,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -45,9 +40,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -60,15 +52,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.complaintclose.Adapters.datashowAdapter;
-import com.example.complaintclose.Adapters.datashowmodule;
 import com.example.complaintclose.Adapters.itemviewAdapter;
 import com.example.complaintclose.Roomdatabase.AppDatabase;
 import com.example.complaintclose.Roomdatabase.ItemDao;
 import com.example.complaintclose.Roomdatabase.notes;
 import com.example.complaintclose.javafiles.ApiService;
 import com.example.complaintclose.javafiles.ArrayData;
-import com.example.complaintclose.javafiles.ImageUploadTask;
 import com.example.complaintclose.javafiles.NetworkUtils;
 import com.example.complaintclose.javafiles.RetrofitClient;
 import com.example.complaintclose.javafiles.config_file;
@@ -92,20 +81,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 
-public class secound_update_activity extends AppCompatActivity  {
+public class secound_update_activity extends AppCompatActivity {
 
     CardView itemcard;
     Button prebutton, submitbutton;
@@ -144,7 +129,7 @@ public class secound_update_activity extends AppCompatActivity  {
     private static final int REQUEST_CODE = 101;
 
     ConstraintLayout nointernet;
-    LinearLayout linearLayout1,linearLayout2;
+    LinearLayout linearLayout1, linearLayout2;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -171,7 +156,7 @@ public class secound_update_activity extends AppCompatActivity  {
         mProgressDialog = findViewById(R.id.progressBar);
         itemqntylayout = findViewById(R.id.itemqntylayout);
         seriallayout = findViewById(R.id.seriallayout);
-        LinearLayout   imageuploadlinear = findViewById(R.id.imageuploadlinear);
+        LinearLayout imageuploadlinear = findViewById(R.id.imageuploadlinear);
         RelativeLayout deletelayout = findViewById(R.id.deletelayout);
         deletelayout.setVisibility(View.GONE);
 
@@ -222,11 +207,12 @@ public class secound_update_activity extends AppCompatActivity  {
         country = intent.getStringExtra("country");
         tdsin = intent.getStringExtra("TDS_IN");
         tdsout = intent.getStringExtra("TDS_out");
+        index = intent.getStringExtra("complainIndex");
 
         SharedPreferences preferences = getSharedPreferences("postdata", MODE_PRIVATE);
         emailid = preferences.getString("email", null);
         mobileno = preferences.getString("number", null);
-        index = preferences.getString("index", null);
+
 
 
         // inflate the dynamic layout of card
@@ -250,10 +236,10 @@ public class secound_update_activity extends AppCompatActivity  {
         getdropdowndata(config_file.Base_url + "getitemname.php", itemlist, true);
 
 
-        autotextwatcher(groupname,grouplayout);
-        autotextwatcher(itemName,itemlayout);
-        textwatcher(qntyno,itemqntylayout);
-        textwatcher(serialNo,seriallayout);
+        autotextwatcher(groupname, grouplayout);
+        autotextwatcher(itemName, itemlayout);
+        textwatcher(qntyno, itemqntylayout);
+        textwatcher(serialNo, seriallayout);
 
         backarrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -284,25 +270,24 @@ public class secound_update_activity extends AppCompatActivity  {
         submitbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (viewitem.getVisibility()==View.GONE)
-                {
+                if (viewitem.getVisibility() == View.GONE) {
 
                     itemcard.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
                     Toast.makeText(secound_update_activity.this, "Please the Prodcut Items", Toast.LENGTH_SHORT).show();
-                }
-               else if (imagepath.getText().toString().isEmpty()) {
+                } else if (imagepath.getText().toString().isEmpty()) {
                     imageuploadlinear.startAnimation(AnimationUtils.loadAnimation(getApplication(), R.anim.shake_text));
 
                     Toast.makeText(secound_update_activity.this, "Please select upload image", Toast.LENGTH_SHORT).show();
                 } else {
 //                    getdatafromdynamic_layout();
 //                    uploaddatatodb();
-                    datapostmodule datapostmodule = new datapostmodule(complainno, index, partyid, brand, partycode, cityid, state, emailid, mobileno, descripation, datalist);
+//                    senddataonserver();
+//                    uploaddatatodb();
+                    datapostmodule datapostmodule = new datapostmodule(complainno, index, partyid, brand, partycode, address, cityid, state, emailid, mobileno, tdsin, tdsout, descripation);
                     Intent intent = new Intent(secound_update_activity.this, DataUploadIntentService.class);
-                    intent.putExtra("image",encodeImageString );
-                    intent.putExtra("datamodule",datapostmodule );
+                    intent.putExtra("image", encodeImageString);
+                    intent.putExtra("datamodule", datapostmodule);
                     startService(intent);
-
                     closedialog();
                 }
 
@@ -343,8 +328,7 @@ public class secound_update_activity extends AppCompatActivity  {
     }
 
 
-    void chooseimageselect()
-    {
+    void chooseimageselect() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose Image Source");
         builder.setItems(new CharSequence[]{"Gallery", "Camera"}, new DialogInterface.OnClickListener() {
@@ -372,8 +356,7 @@ public class secound_update_activity extends AppCompatActivity  {
         text.requestFocus();
     }
 
-    void textwatcher(TextInputEditText text,TextInputLayout textInputLayout)
-    {
+    void textwatcher(TextInputEditText text, TextInputLayout textInputLayout) {
         text.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -394,8 +377,8 @@ public class secound_update_activity extends AppCompatActivity  {
 
 
     }
-    void autotextwatcher(AutoCompleteTextView text,TextInputLayout textInputLayout)
-    {
+
+    void autotextwatcher(AutoCompleteTextView text, TextInputLayout textInputLayout) {
         text.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -538,7 +521,7 @@ public class secound_update_activity extends AppCompatActivity  {
 
     private void camerapermission() {
         Dexter.withActivity(this)
-                .withPermissions(android.Manifest.permission.CAMERA,Manifest.permission.POST_NOTIFICATIONS)
+                .withPermissions(android.Manifest.permission.CAMERA, Manifest.permission.POST_NOTIFICATIONS)
                 .withListener(new MultiplePermissionsListener() {
                     @Override
                     public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
@@ -591,7 +574,6 @@ public class secound_update_activity extends AppCompatActivity  {
     }
 
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -601,9 +583,7 @@ public class secound_update_activity extends AppCompatActivity  {
                 encoder(selectedImageUri);
 
 
-            }
-
-            else if (requestCode == CAMERA_PIC_REQUEST && data != null) {
+            } else if (requestCode == CAMERA_PIC_REQUEST && data != null) {
 
                 Bitmap photo = (Bitmap) data.getExtras().get("data");
                 Uri cameraImageUri = getImageUri(secound_update_activity.this, photo);
@@ -623,8 +603,7 @@ public class secound_update_activity extends AppCompatActivity  {
         return Uri.parse(path);
     }
 
-    void encoder(Uri filepath)
-    {
+    void encoder(Uri filepath) {
         try {
 
             // Display the selected image using an ImageView
@@ -654,14 +633,13 @@ public class secound_update_activity extends AppCompatActivity  {
 
         return filePath;
     }
+
     private void encodeBitmapImage(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
         byte[] bytesofimage = byteArrayOutputStream.toByteArray();
         encodeImageString = android.util.Base64.encodeToString(bytesofimage, Base64.DEFAULT);
     }
-
-
 
 
     private String saveImageToExternalStorage(Bitmap imageBitmap) {
@@ -824,7 +802,7 @@ public class secound_update_activity extends AppCompatActivity  {
     }
 
     void senddataonserver() {
-        datapostmodule datapostmodule = new datapostmodule(complainno, index, partyid, brand, partycode, cityid, state, emailid, mobileno, descripation, datalist);
+        datapostmodule datapostmodule = new datapostmodule(complainno, index, partyid, brand, partycode, address, cityid, state, emailid, mobileno, tdsin, tdsout, descripation);
 
         ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
 
@@ -836,29 +814,32 @@ public class secound_update_activity extends AppCompatActivity  {
 
                 if (response.isSuccessful()) {
 
-                    notificationHelper.updateprogressbar(secound_update_activity.this,"Upload Complain");
+                    notificationHelper.updateprogressbar(secound_update_activity.this, "Upload Complain");
                     Toast.makeText(secound_update_activity.this, "Successfully Close Complaint", Toast.LENGTH_SHORT).show();
 //                    closedialog(response.message().toString());
+//                    onBackPressed();
                 } else {
                     // Handle error
+                    Toast.makeText(secound_update_activity.this, ""+response.errorBody(), Toast.LENGTH_SHORT).show();
                 }
 
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(secound_update_activity.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
                 // Handle failure
             }
         });
     }
 
     private void uploaddatatodb() {
-        notificationHelper.showProgressNotification(secound_update_activity.this,"Upload Complain");
-        StringRequest request = new StringRequest(Request.Method.POST, config_file.Base_url + "imageupload.php", new Response.Listener<String>() {
+        notificationHelper.showProgressNotification(secound_update_activity.this, "Upload Complain");
+        StringRequest request = new StringRequest(Request.Method.POST, config_file.Base_url + "closecomplaintthird.php", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                senddataonserver();
-
+//                senddataonserver();
+                Toast.makeText(secound_update_activity.this, "data updated ", Toast.LENGTH_SHORT).show();
             }
 
         }, new Response.ErrorListener() {
@@ -867,12 +848,24 @@ public class secound_update_activity extends AppCompatActivity  {
 
                 Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
             }
-        })
-        {
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> map = new HashMap<String, String>();
-                map.put("upload", encodeImageString);
+
+                map.put("complainnumber", complainno);
+                map.put("compliantid", index);
+                map.put("partycode", partycode);
+                map.put("party_id", partyid);
+                map.put("brand_name", brand);
+                map.put("cityid", cityid);
+                map.put("state", state);
+                map.put("email", emailid);
+                map.put("description", descripation);
+                map.put("phone", index);
+                map.put("tdsin", tdsin);
+                map.put("tdsout", tdsout);
+                map.put("address", address);
                 return map;
             }
         };

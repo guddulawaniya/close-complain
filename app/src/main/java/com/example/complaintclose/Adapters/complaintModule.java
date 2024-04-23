@@ -16,7 +16,7 @@ public class complaintModule {
         this.status = statusText;
     }
 
-    public complaintModule(String compliant_no, String createDate, String createtime, String partyname, String address, String emailid, String mobileno, String brand, String partycode, String complainreason, String city, String state, String country, int status) {
+    public complaintModule(String compliant_no, String createDate, String createtime, String partyname, String address, String emailid, String mobileno, String brand, String partycode, String complainreason, String city, String state, String country, int status,String tdsin,String tdsout) {
         this.compliant_no = compliant_no;
         this.partyname = partyname;
         this.createDate = createDate;
@@ -31,7 +31,10 @@ public class complaintModule {
         this.state = state;
         this.country = country;
         this.status = status;
+        this.tdsin = tdsin;
+        this.tdsout = tdsout;
     }
+
 
     public String getCreatetime() {
         return createtime;

@@ -92,8 +92,8 @@ public class total_complaint extends Fragment {
 
         });
 
-        current_complaint_Fragment.SharedPreferencesLoader sharedPreferencesLoader = new current_complaint_Fragment.SharedPreferencesLoader(getContext());
-        list = sharedPreferencesLoader.loadInBackground();
+//        current_complaint_Fragment.SharedPreferencesLoader sharedPreferencesLoader = new current_complaint_Fragment.SharedPreferencesLoader(getContext());
+//        list = sharedPreferencesLoader.loadInBackground();
         if (!list.isEmpty())
         {
             animationView.setVisibility(View.GONE);
@@ -111,7 +111,6 @@ public class total_complaint extends Fragment {
     }
 
     private void getcomplaindataRefrsh() {
-
 
         if (!NetworkUtils.isNetworkAvailable(getContext())) {
             animationView.setVisibility(View.VISIBLE);
@@ -142,7 +141,7 @@ public class total_complaint extends Fragment {
                         int status = object1.getInt("status");
                         String compliant_no = object1.getString("compliant_no");
 
-                        if (status == 0 && !compliant_no.isEmpty()) {
+                        if (status != 0 && !compliant_no.isEmpty()) {
                             int party_id = object1.getInt("party_id");
                             String createDate = object1.getString("create_date");
                             String createtime = object1.getString("create_time");
@@ -155,6 +154,10 @@ public class total_complaint extends Fragment {
                             String city = object1.getString("city_id");
                             String state = object1.getString("state");
                             String country = object1.getString("country");
+                            String tdsin = object1.getString("tds_in");
+                            String tdsout = object1.getString("tds_out");
+
+                            Toast.makeText(getContext() , ""+status, Toast.LENGTH_SHORT).show();
 
                             cursor = databaseManager.getdata();
                             String partyname = null;
@@ -171,7 +174,7 @@ public class total_complaint extends Fragment {
 
                             list.add(new complaintModule(compliant_no, createDate, createtime, partyname, address, emailid, mobileno, brand,
                                     partycode, complainreason, city, state, country,
-                                    status));
+                                    status,tdsin,tdsout));
 
                             Collections.sort(list, new Comparator<complaintModule>() {
                                 @Override
@@ -266,7 +269,7 @@ public class total_complaint extends Fragment {
                         String compliant_no = object1.getString("compliant_no");
                         int status = object1.getInt("status");
 
-                        if (!compliant_no.isEmpty()) {
+                        if (!compliant_no.isEmpty() && status!=0) {
 
                             int party_id = object1.getInt("party_id");
                             String createDate = object1.getString("create_date");
@@ -280,6 +283,8 @@ public class total_complaint extends Fragment {
                             String city = object1.getString("city_id");
                             String state = object1.getString("state");
                             String country = object1.getString("country");
+                            String tdsin = object1.getString("tds_in");
+                            String tdsout = object1.getString("tds_out");
 
                             cursor = databaseManager.getdata();
                             String partyname = null;
@@ -296,7 +301,7 @@ public class total_complaint extends Fragment {
 
                             list.add(new complaintModule(compliant_no, createDate, createtime, partyname, address, emailid, mobileno, brand,
                                     partycode, complainreason, city, state, country
-                                    , status));
+                                    , status,tdsin,tdsout));
 
                             complaintAdapter adapter = new complaintAdapter(list, getContext());
                             recyclerView.setAdapter(adapter);

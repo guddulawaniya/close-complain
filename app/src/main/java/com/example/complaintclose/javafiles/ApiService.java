@@ -6,5 +6,5 @@ import retrofit2.http.POST;
 
 public interface ApiService {
     @POST("closecomplaintthird.php")
-    Call<Void> sendDataArray(@Body datapostmodule arrayData);
+    Call<Void> sendDataArray(@Body datapostmodule data);
 }

@@ -34,6 +34,7 @@ public class complain_details_activity extends AppCompatActivity {
         ArrayList<complaintModule> list  = new ArrayList<>();
 
         citynamedb = new Citynamedb(this);
+
         cursor = citynamedb.getdata();
 
 
@@ -52,6 +53,8 @@ public class complain_details_activity extends AppCompatActivity {
         String state = intent.getStringExtra("state");
         String country = intent.getStringExtra("country");
         String address = intent.getStringExtra("address");
+        String tdsin = intent.getStringExtra("tdsin");
+        String tdsout = intent.getStringExtra("tdsout");
 
 
         SharedPreferences.Editor editor = getSharedPreferences("postdata",MODE_PRIVATE).edit();
@@ -72,14 +75,27 @@ public class complain_details_activity extends AppCompatActivity {
             }
         });
 
+        if (status.equals("2"))
+        {
+            okaybutton.setText("OK");
+        }
+
         okaybutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (status.equals("2"))
+                {
+                    onBackPressed();
+                }else
+                {
 
-                Intent intent1 = new Intent(complain_details_activity.this,close_complaint_Form_Activity.class);
-                intent1.putExtra("id",2);
-                intent1.putExtra("complainno",complainno);
-                startActivity(intent1);
+                    Intent intent1 = new Intent(complain_details_activity.this,close_complaint_Form_Activity.class);
+                    intent1.putExtra("id",2);
+                    intent1.putExtra("complainno",complainno);
+                    startActivity(intent1);
+                }
+
+
 
             }
         });
@@ -126,6 +142,12 @@ public class complain_details_activity extends AppCompatActivity {
 
         if (address != null && !address.equals("null") && !address.isEmpty()) {
             list.add(new complaintModule("Address", address));
+        }
+        if (tdsin != null && !tdsin.equals("null") && !tdsin.isEmpty()) {
+            list.add(new complaintModule("TDS IN", tdsin));
+        }
+        if (tdsout != null && !tdsout.equals("null") && !tdsout.isEmpty()) {
+            list.add(new complaintModule("TDS OUT", tdsout));
         }
 
         datarecyclerview.setLayoutManager(new LinearLayoutManager(this));

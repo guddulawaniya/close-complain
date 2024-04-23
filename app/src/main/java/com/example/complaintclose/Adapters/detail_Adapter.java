@@ -53,9 +53,9 @@ public class detail_Adapter extends RecyclerView.Adapter<detail_Adapter.viewhold
 
             if (completeid == 0) {
                 holder.dynamicText.setText("Pending");
-            } else if (completeid == 1) {
-                holder.dynamicText.setText("Closed");
             } else if (completeid == 2) {
+                holder.dynamicText.setText("Closed");
+            } else if (completeid == 1) {
                 holder.dynamicText.setText("Approved");
 
             } else if (completeid == 3) {

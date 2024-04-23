@@ -56,7 +56,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
     Button submitbutton;
     ProgressDialog mProgressDialog;
 
-    String partynameindex, brandindex, countyindex, stateindex, createtime, cityindex, encodeImageString;
+    String partynameindex, brandindex, countyindex, stateindex, createtime, cityindex, encodeImageString,complainIndex;
 
     fetchdata_from_sqlite_return_array fetchdata_arrayform;
     fetchdata_from_sqlite fetchdata;
@@ -130,15 +130,15 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
 
             }
         });
-        state.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-                                    long arg3) {
-                stateindex = String.valueOf(arg2 + 1);
-
-            }
-        });
+//        state.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//            @Override
+//            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+//                                    long arg3) {
+//                stateindex = String.valueOf(arg2 + 1);
+//
+//            }
+//        });
         city.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
@@ -355,7 +355,8 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
         intent1.putExtra("partyid", partynameindex);
         intent1.putExtra("brand", brandindex);
         intent1.putExtra("cityid", cityindex);
-        intent1.putExtra("state", stateindex);
+        intent1.putExtra("state", state.getText().toString());
+        intent1.putExtra("complainIndex", complainIndex);
         startActivity(intent1);
 
     }
@@ -446,7 +447,7 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
             return;
         }
 
-        String registrationURL = config_file.Base_url + "get_complaint_data_by_id.php" + "?complaint_id=" + complainno;
+        String registrationURL = config_file.Base_url + "get_complaint_data_by_id.php?complaint_id=" + complainno;
 
 
         class registration extends AsyncTask<String, String, String> {
@@ -466,18 +467,20 @@ public class close_complaint_Form_Activity extends AppCompatActivity {
                     partynameindex = object1.getString("party_id");
                     brandindex = object1.getString("brand_id");
                     cityindex = object1.getString("city_id");
-                    stateindex = object1.getString("state");
+                   String stateata = object1.getString("state");
                     countyindex = object1.getString("country");
+                    complainIndex = object1.getString("id");
+
 
                     String partygetname = fetchdata.partysetdynamicdata(partynameindex);
                     String brandgetname = fetchdata.brandsetdynamicdata(brandindex);
                     String citygetname = fetchdata.citysetdynamicdata(cityindex);
-                    String stategetname = fetchdata.statesetdynamicdata(stateindex);
+//                    String stategetname = fetchdata.statesetdynamicdata(stateindex);
 
                     partyname.setText(partygetname);
                     brand.setText(brandgetname);
                     city.setText(citygetname);
-                    state.setText(stategetname);
+                    state.setText(stateata);
                     mProgressDialog.dismiss();
 
                 } catch (JSONException e) {

@@ -26,8 +26,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
         CardView profile = findViewById(R.id.profile);
         TextView clientid = findViewById(R.id.clientid);
         TextView profiledetails = findViewById(R.id.profiledetails);

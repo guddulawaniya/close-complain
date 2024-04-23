@@ -2,8 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="primarycolor">#0889C5</color>
-    <color name="primarycolordark">#0875A6</color>
+    <color name="primarycolor">#147A71</color>
+    <color name="primarycolordark">#1A514C</color>
     <color name="bodybg">#EAEAEA</color>
     <color name="hintColor">#8B8989</color>
     <color name="dialog_bg">#F4FBFF</color>

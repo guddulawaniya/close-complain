@@ -67,6 +67,8 @@ public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.view
                 intent.putExtra("city", module.getCity());
                 intent.putExtra("state", module.getState());
                 intent.putExtra("country", module.getCountry());
+                intent.putExtra("tdsin", module.getTdsin());
+                intent.putExtra("tdsout", module.getTdsout());
                 intent.putExtra("address", module.getAddress());
 
                 context.startActivity(intent);
@@ -75,8 +77,8 @@ public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.view
         });
 
 
-        if (completeid == 1) {
-            holder.statusicon.setImageResource(R.drawable.complete_icon);
+        if (completeid == 2) {
+            holder.statusicon.setImageResource(R.drawable.approved_icon);
             holder.status.setBackgroundColor(Color.parseColor("#1EA323"));
             holder.status.setText("Closed");
         } else if (completeid == 3) {
@@ -84,9 +86,9 @@ public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.view
             holder.status.setBackgroundColor(Color.parseColor("#D11414"));
             holder.status.setText("Rajected");
 
-        }else if (completeid == 2) {
-            holder.statusicon.setImageResource(R.drawable.approved_icon);
-            holder.status.setBackgroundColor(Color.parseColor("#32cd32"));
+        }else if (completeid == 1) {
+            holder.statusicon.setImageResource(R.drawable.approve);
+            holder.status.setBackgroundColor(Color.parseColor("#0CA5AC"));
             holder.status.setText("Approved");
 
         } else if (completeid==0){
@@ -95,7 +97,6 @@ public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.view
             holder.status.setText("Pending");
 
         }
-
 
     }
 

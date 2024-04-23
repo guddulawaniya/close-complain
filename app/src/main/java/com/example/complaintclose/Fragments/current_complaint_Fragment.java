@@ -175,6 +175,8 @@ public class current_complaint_Fragment extends Fragment  {
                             String city = object1.getString("city_id");
                             String state = object1.getString("state");
                             String country = object1.getString("country");
+                            String tdsin = object1.getString("tds_in");
+                            String tdsout = object1.getString("tds_out");
 
                             cursor = databaseManager.getdata();
                             String partyname = null;
@@ -191,7 +193,7 @@ public class current_complaint_Fragment extends Fragment  {
 
                             list.add(new complaintModule(compliant_no, createDate, createtime, partyname, address, emailid, mobileno, brand,
                                     partycode, complainreason, city, state, country,
-                                    status));
+                                    status,tdsin,tdsout));
 
                             Collections.sort(list, new Comparator<complaintModule>() {
                                 @Override
@@ -314,6 +316,8 @@ public class current_complaint_Fragment extends Fragment  {
                             String city = object1.getString("city_id");
                             String state = object1.getString("state");
                             String country = object1.getString("country");
+                            String tdsin = object1.getString("tds_in");
+                            String tdsout = object1.getString("tds_out");
 
                             cursor = databaseManager.getdata();
                             String partyname = null;
@@ -330,7 +334,7 @@ public class current_complaint_Fragment extends Fragment  {
 
                             list.add(new complaintModule(compliant_no, createDate, createtime, partyname, address, emailid, mobileno, brand,
                                     partycode, complainreason, city, state, country,
-                                    status));
+                                    status,tdsin,tdsout));
                             Collections.reverse(list);
                             complaintAdapter adapter = new complaintAdapter(list, getContext());
                             recyclerView.setAdapter(adapter);

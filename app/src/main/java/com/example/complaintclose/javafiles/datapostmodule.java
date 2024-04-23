@@ -4,30 +4,58 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class datapostmodule implements Serializable {
-    String complainnumber,
+   private String complainnumber,
             compliantid,
             party_id,
             brand_name,
             party_code,
+            address,
             cityid,
             state,
             email,
             phone,
+            tdsin,
+            tdsout,
             description;
-    ArrayList<ArrayData> under;
 
-    public datapostmodule(String complainnumber, String compliantid, String party_id, String brand_name, String party_code, String cityid, String state, String email, String phone, String description, ArrayList<ArrayData> under) {
+    public datapostmodule(String complainnumber, String compliantid, String party_id, String brand_name, String party_code, String address, String cityid, String state, String email, String phone, String tdsin, String tdsout, String description) {
         this.complainnumber = complainnumber;
         this.compliantid = compliantid;
         this.party_id = party_id;
         this.brand_name = brand_name;
         this.party_code = party_code;
+        this.address = address;
         this.cityid = cityid;
         this.state = state;
         this.email = email;
         this.phone = phone;
+        this.tdsin = tdsin;
+        this.tdsout = tdsout;
         this.description = description;
-        this.under = under;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getTdsin() {
+        return tdsin;
+    }
+
+    public void setTdsin(String tdsin) {
+        this.tdsin = tdsin;
+    }
+
+    public String getTdsout() {
+        return tdsout;
+    }
+
+    public void setTdsout(String tdsout) {
+        this.tdsout = tdsout;
     }
 
     public String getComplainnumber() {
@@ -108,14 +136,6 @@ public class datapostmodule implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public ArrayList<ArrayData> getUnder() {
-        return under;
-    }
-
-    public void setUnder(ArrayList<ArrayData> under) {
-        this.under = under;
     }
 }
 

@@ -44,12 +44,39 @@ public class DataUploadIntentService extends IntentService {
             encodeImageString = intent.getStringExtra("image");
              datapostmodule = (datapostmodule) intent.getSerializableExtra("datamodule");
             uploaddatatodb();
+            textdatapost();
         }
     }
 
     private void uploaddatatodb() {
         notificationHelper.showProgressNotification(DataUploadIntentService.this, "Upload Complain");
         StringRequest request = new StringRequest(Request.Method.POST, config_file.Base_url + "imageupload.php",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+//                        senddataonserver();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("upload", encodeImageString);
+                map.put("complainid", datapostmodule.getComplainnumber());
+                return map;
+            }
+        };
+
+        RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
+        queue.add(request);
+    }
+ private void textdatapost() {
+        notificationHelper.showProgressNotification(DataUploadIntentService.this, "Upload Complain");
+        StringRequest request = new StringRequest(Request.Method.POST, config_file.Base_url + "closecomplaintthird.php",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -64,7 +91,20 @@ public class DataUploadIntentService extends IntentService {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> map = new HashMap<String, String>();
-                map.put("upload", encodeImageString);
+
+                map.put("complainnumber", datapostmodule.getComplainnumber());
+                map.put("compliantid", datapostmodule.getCompliantid());
+                map.put("partycode", datapostmodule.getParty_code());
+                map.put("party_id", datapostmodule.getParty_id());
+                map.put("brand_name", datapostmodule.getBrand_name());
+                map.put("cityid", datapostmodule.getCityid());
+                map.put("state", datapostmodule.getState());
+                map.put("email", datapostmodule.getEmail());
+                map.put("description", datapostmodule.getDescription());
+                map.put("phone", datapostmodule.getPhone());
+                map.put("tdsin", datapostmodule.getTdsin());
+                map.put("tdsout", datapostmodule.getTdsout());
+                map.put("address", datapostmodule.getAddress());
                 return map;
             }
         };
@@ -79,7 +119,6 @@ public class DataUploadIntentService extends IntentService {
 
         Call<Void> call = apiService.sendDataArray(datapostmodule);
         call.enqueue(new Callback<Void>() {
-
             @Override
             public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                 if (response.isSuccessful()) {
