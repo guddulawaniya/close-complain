@@ -66,6 +66,7 @@ public class current_complaint_Fragment extends Fragment  {
     Cursor cursor;
     ConstraintLayout nodata;
     ConstraintLayout animationView;
+    String mobile;
 
     public static boolean CHECK_REFRESH = false;
 
@@ -97,6 +98,9 @@ public class current_complaint_Fragment extends Fragment  {
         new Insertdata_statename_sqlite(getContext());
         // set state data by ids
         new Insertdata_brandname_sqlite(getContext());
+
+        SharedPreferences preferences = getContext().getSharedPreferences("postdata", getContext().MODE_PRIVATE);
+         mobile = preferences.getString("number", null);
 
 
         list = new ArrayList<>();
@@ -138,8 +142,9 @@ public class current_complaint_Fragment extends Fragment  {
             return;
         }
 
-        String registrationURL = config_file.Base_url + "getcomplaint.php";
+//        String registrationURL = config_file.Base_url + "getcomplaint.php";
 
+        String registrationURL = config_file.Base_url + "getcomplaint.php?mobilenumber="+mobile;
 
         class registration extends AsyncTask<String, String, String> {
             @Override
@@ -151,12 +156,13 @@ public class current_complaint_Fragment extends Fragment  {
                     JSONObject jsonObject = new JSONObject(s);
                     boolean statuscheck = jsonObject.getBoolean("status");
 
-                    if (!statuscheck) {
+
+                    JSONArray object = jsonObject.getJSONArray("data");
+
+                    if (object.length()==0) {
                         nodata.setVisibility(View.VISIBLE);
                         return;
                     }
-
-                    JSONArray object = jsonObject.getJSONArray("data");
                     for (int i = 0; i < object.length(); ++i) {
                         JSONObject object1 = object.getJSONObject(i);
                         int status = object1.getInt("status");
@@ -177,6 +183,8 @@ public class current_complaint_Fragment extends Fragment  {
                             String country = object1.getString("country");
                             String tdsin = object1.getString("tds_in");
                             String tdsout = object1.getString("tds_out");
+                            String lat = object1.getString("tds_in");
+                            String log = object1.getString("tds_out");
 
                             cursor = databaseManager.getdata();
                             String partyname = null;
@@ -275,9 +283,9 @@ public class current_complaint_Fragment extends Fragment  {
 //                Toast.makeText(getContext(), "No internet connection", Toast.LENGTH_SHORT).show();
                 return;
             }
-        String registrationURL = config_file.Base_url + "getcomplaint.php";
-        SharedPreferences preferences = getContext().getSharedPreferences("postdata", getContext().MODE_PRIVATE);
-        String mobile = preferences.getString("number", null);
+//        String registrationURL = config_file.Base_url + "getcomplaint.php";
+        String registrationURL = config_file.Base_url + "getcomplaint.php?mobilenumber="+mobile;
+
 
         class registration extends AsyncTask<String, String, String> {
 
@@ -297,6 +305,8 @@ public class current_complaint_Fragment extends Fragment  {
                     }
                     JSONArray object = jsonObject.getJSONArray("data");
 
+
+//                    Toast.makeText(getContext(), ""+object.length(), Toast.LENGTH_SHORT).show();
 
                     for (int i = 0; i < object.length(); ++i) {
                         JSONObject object1 = object.getJSONObject(i);
@@ -338,6 +348,11 @@ public class current_complaint_Fragment extends Fragment  {
                             Collections.reverse(list);
                             complaintAdapter adapter = new complaintAdapter(list, getContext());
                             recyclerView.setAdapter(adapter);
+
+                            if (list.size()==0) {
+                                nodata.setVisibility(View.VISIBLE);
+                                return;
+                            }
 
                             Gson gson = new Gson();
                             String json = gson.toJson(list);

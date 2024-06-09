@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
         CardView profile = findViewById(R.id.profile);
         TextView clientid = findViewById(R.id.clientid);
         TextView profiledetails = findViewById(R.id.profiledetails);
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, Status_activity.class);
+                intent.putExtra("id",false);
                 startActivity(intent);
             }
         });
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, Status_activity.class);
+                intent.putExtra("id",true);
                 startActivity(intent);
             }
         });
@@ -96,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         logoutbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences.Editor preferences = getSharedPreferences("logindata", MODE_PRIVATE).edit();
+                SharedPreferences.Editor preferences = getSharedPreferences("postdata",MODE_PRIVATE).edit();
                 preferences.clear();
                 preferences.commit();
                 Intent intent = new Intent(MainActivity.this, login_Actvity.class);

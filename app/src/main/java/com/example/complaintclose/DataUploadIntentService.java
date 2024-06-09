@@ -31,6 +31,7 @@ public class DataUploadIntentService extends IntentService {
     NotificationHelper notificationHelper;
     datapostmodule datapostmodule;
     String encodeImageString;
+    boolean updateNotification = false;
 
 
     public DataUploadIntentService() {
@@ -49,7 +50,7 @@ public class DataUploadIntentService extends IntentService {
     }
 
     private void uploaddatatodb() {
-        notificationHelper.showProgressNotification(DataUploadIntentService.this, "Upload Complain");
+//        notificationHelper.showProgressNotification(DataUploadIntentService.this, "Upload Complain");
         StringRequest request = new StringRequest(Request.Method.POST, config_file.Base_url + "imageupload.php",
                 new Response.Listener<String>() {
                     @Override
@@ -74,13 +75,24 @@ public class DataUploadIntentService extends IntentService {
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
         queue.add(request);
     }
+
+
+    void notificationdata(){
+        if (updateNotification)
+        {
+            notificationHelper.updateprogressbar(DataUploadIntentService.this, "Successfully Close Complaint");
+        }
+
+    }
  private void textdatapost() {
-        notificationHelper.showProgressNotification(DataUploadIntentService.this, "Upload Complain");
+//        notificationHelper.showProgressNotification(DataUploadIntentService.this, "Upload Complain");
         StringRequest request = new StringRequest(Request.Method.POST, config_file.Base_url + "closecomplaintthird.php",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        senddataonserver();
+                        updateNotification = true;
+                        notificationdata();
+//                        senddataonserver();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -94,7 +106,7 @@ public class DataUploadIntentService extends IntentService {
 
                 map.put("complainnumber", datapostmodule.getComplainnumber());
                 map.put("compliantid", datapostmodule.getCompliantid());
-                map.put("partycode", datapostmodule.getParty_code());
+                map.put("party_code", datapostmodule.getParty_code());
                 map.put("party_id", datapostmodule.getParty_id());
                 map.put("brand_name", datapostmodule.getBrand_name());
                 map.put("cityid", datapostmodule.getCityid());
@@ -111,29 +123,5 @@ public class DataUploadIntentService extends IntentService {
 
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
         queue.add(request);
-    }
-
-    private void senddataonserver() {
-
-        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-
-        Call<Void> call = apiService.sendDataArray(datapostmodule);
-        call.enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
-                if (response.isSuccessful()) {
-                    // Do something on success
-                    notificationHelper.updateprogressbar(DataUploadIntentService.this, "Upload Complain");
-                    Log.d("DataUploadIntentService", "Successfully Close Complaint");
-                } else {
-                    // Handle error
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                // Handle failure
-            }
-        });
     }
 }

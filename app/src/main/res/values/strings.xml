@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Complaint Close</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="policy_text"><![CDATA[By clicking , I accept the Term & \nCondition and Privacy Policy]]></string>
+    <string name="policy_text"><![CDATA[By clicking , I accept the Term & Condition and Privacy Policy]]></string>
 
 </resources>

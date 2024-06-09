@@ -54,6 +54,7 @@ public class total_complaint extends Fragment {
     Cursor cursor;
     ConstraintLayout animationView;
     ConstraintLayout nofounddata;
+    String mobilenumber;
 
 
     @Override
@@ -66,6 +67,8 @@ public class total_complaint extends Fragment {
         animationView.setVisibility(View.GONE);
         nofounddata = view.findViewById(R.id.nofounddata);
 
+        SharedPreferences preferences = getContext().getSharedPreferences("postdata", getContext().MODE_PRIVATE);
+         mobilenumber = preferences.getString("number", null);
 
         list = new ArrayList<>();
         recyclerView = view.findViewById(R.id.totalcomplaintRecyclerview);
@@ -117,8 +120,8 @@ public class total_complaint extends Fragment {
             return;
         }
 
-        String registrationURL = config_file.Base_url + "getcomplaint.php";
-
+//        String registrationURL = config_file.Base_url + "getcomplaint.php";
+        String registrationURL = config_file.Base_url + "getcomplaint.php?mobilenumber="+mobilenumber;
 
         class registration extends AsyncTask<String, String, String> {
             @Override
@@ -157,7 +160,7 @@ public class total_complaint extends Fragment {
                             String tdsin = object1.getString("tds_in");
                             String tdsout = object1.getString("tds_out");
 
-                            Toast.makeText(getContext() , ""+status, Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(getContext() , ""+status, Toast.LENGTH_SHORT).show();
 
                             cursor = databaseManager.getdata();
                             String partyname = null;
@@ -217,7 +220,6 @@ public class total_complaint extends Fragment {
     }
     private void refreshData() {
         new android.os.Handler().postDelayed(() -> {
-
             getallData();
             swipeRefreshLayout.setRefreshing(false);
         }, 2000); // 2000 milliseconds = 2 seconds (adjust as needed)
@@ -227,7 +229,6 @@ public class total_complaint extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         animationView.setVisibility(View.GONE);
-
         if (!NetworkUtils.isNetworkAvailable(getContext())) {
             progressBar.setVisibility(View.GONE);
             recyclerView.setVisibility(View.GONE);
@@ -236,12 +237,9 @@ public class total_complaint extends Fragment {
             return;
         }
 
-        SharedPreferences preferences = getContext().getSharedPreferences("postdata", getContext().MODE_PRIVATE);
-        String mobile = preferences.getString("number", null);
 
-
-        String registrationURL = config_file.Base_url + "getcomplaint.php";
-
+//        String registrationURL = config_file.Base_url + "getcomplaint.php";
+        String registrationURL = config_file.Base_url + "getcomplaint.php?mobilenumber="+mobilenumber;
 
         class registration extends AsyncTask<String, String, String> {
 

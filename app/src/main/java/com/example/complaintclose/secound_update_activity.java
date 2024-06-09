@@ -2,6 +2,7 @@ package com.example.complaintclose;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -279,14 +280,11 @@ public class secound_update_activity extends AppCompatActivity {
 
                     Toast.makeText(secound_update_activity.this, "Please select upload image", Toast.LENGTH_SHORT).show();
                 } else {
-//                    getdatafromdynamic_layout();
-//                    uploaddatatodb();
-//                    senddataonserver();
-//                    uploaddatatodb();
                     datapostmodule datapostmodule = new datapostmodule(complainno, index, partyid, brand, partycode, address, cityid, state, emailid, mobileno, tdsin, tdsout, descripation);
                     Intent intent = new Intent(secound_update_activity.this, DataUploadIntentService.class);
                     intent.putExtra("image", encodeImageString);
                     intent.putExtra("datamodule", datapostmodule);
+                    notificationHelper.showProgressNotification(secound_update_activity.this, "Upload Complain");
                     startService(intent);
                     closedialog();
                 }
@@ -318,7 +316,6 @@ public class secound_update_activity extends AppCompatActivity {
                     errorShowFunction(seriallayout, serialNo);
 
                 } else {
-
                     uploaditem_details();
                 }
 
@@ -327,6 +324,12 @@ public class secound_update_activity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getdataofitems(complainno);
+
+    }
 
     void chooseimageselect() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -408,8 +411,22 @@ public class secound_update_activity extends AppCompatActivity {
         text.requestFocus();
     }
 
+
+    boolean isNotificationShown = false;
+
+    void updateNotification() {
+        if (isNotificationShown) {
+            notificationHelper.updateprogressbar(secound_update_activity.this, "Item Uploaded");
+            isNotificationShown = false;
+        }
+    }
+
     private void uploaditem_details() {
-        notificationHelper.showProgressNotification(secound_update_activity.this, "Item Uploading");
+
+            if (!isNotificationShown) {
+                notificationHelper.showProgressNotification(secound_update_activity.this, "Item Processing");
+                isNotificationShown = true;
+            }
 
         String registrationURL = config_file.Base_url + "item_details_close.php?complainnumber=" + complainno + "&group=" + groupname.getText().toString() + "&itemname=" + itemName.getText().toString() + "&qty=" + qntyno.getText().toString() + "&srno=" + serialNo.getText().toString();
         String itemdata = itemName.getText().toString();
@@ -423,11 +440,9 @@ public class secound_update_activity extends AppCompatActivity {
             @Override
             protected void onPostExecute(String s) {
 
-                notificationHelper.updateprogressbar(secound_update_activity.this, "item Uploaded");
+                updateNotification();
 
                 viewitem.setVisibility(View.VISIBLE);
-
-                Toast.makeText(secound_update_activity.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show();
 
 
                 super.onPostExecute(s);
@@ -468,10 +483,10 @@ public class secound_update_activity extends AppCompatActivity {
             intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_HISTORY);
             startActivity(intent1);
             finish();
-            overridePendingTransition(R.anim.right_out, R.anim.left_in);
+//            overridePendingTransition(R.anim.right_out, R.anim.left_in);
 
 
-        });
+        }); 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
@@ -494,6 +509,9 @@ public class secound_update_activity extends AppCompatActivity {
 //
 //        }
 //    }
+
+
+
 
     private void animateDuplicateView(View view) {
         // ViewPropertyAnimator example (translation animation)
@@ -712,7 +730,7 @@ public class secound_update_activity extends AppCompatActivity {
                         }
                     } else {
                         // Handle the case when status is false
-                        Toast.makeText(secound_update_activity.this, "Do Not Have any data", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(secound_update_activity.this, "Do Not Have any data", Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
                     mProgressDialog.setVisibility(View.GONE);

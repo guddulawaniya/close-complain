@@ -70,8 +70,9 @@ public class Profile_activity extends AppCompatActivity {
                 finish();
             }
         });
-        SharedPreferences preferences = getSharedPreferences("logindata",MODE_PRIVATE);
-        String mobilenumber = preferences.getString("number",null);
+
+        SharedPreferences preferences = getSharedPreferences("postdata", MODE_PRIVATE);
+        String mobilenumber = preferences.getString("number", null);
         clientid.setText(mobilenumber);
 
     }

@@ -25,7 +25,6 @@ public class NotificationHelper {
     public NotificationHelper(Context context) {
         notificationManager = NotificationManagerCompat.from(context);
 
-        // Create a notification channel for Android Oreo and above
         createNotificationChannel(context);
 
     }
@@ -43,7 +42,7 @@ public class NotificationHelper {
         }
     }
 
-    public void showProgressNotification(Context context ,String notifionationdata) {
+    public void showProgressNotification(Context context, String notifionationdata) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notifications)
                 .setContentTitle(notifionationdata)
@@ -60,38 +59,21 @@ public class NotificationHelper {
         notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
-    public void updateprogressbar(Context context,String notifionationdata) {
+    public void updateprogressbar(Context context, String notifionationdata) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notifications)
                 .setContentTitle(notifionationdata)
-                .setContentText("Succesfully Close Complain")
-                .setPriority(NotificationCompat.PRIORITY_HIGH);
-
+                .setContentText(notifionationdata)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setSilent(true);
         Notification notification = builder.build();
+        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+
+            return;
+        }
+        notificationManager.notify(NOTIFICATION_ID, notification);
 
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SystemClock.sleep(2000);
-                for (int currentProgress = 0; currentProgress <= 100; currentProgress += 10) {
-
-                    builder.setProgress(maxprogress, currentProgress, false);
-                    if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-
-                        return;
-                    }
-                    notificationManager.notify(NOTIFICATION_ID, notification);
-                    SystemClock.sleep(1000);
-
-
-                }
-                builder.setContentText("Download Finished")
-                        .setProgress(0, 0, false);
-                notificationManager.notify(NOTIFICATION_ID, notification);
-
-            }
-        }).start();
     }
     public void dismissNotification() {
         notificationManager.cancel(NOTIFICATION_ID);

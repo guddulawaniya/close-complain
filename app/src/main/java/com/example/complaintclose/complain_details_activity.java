@@ -3,6 +3,7 @@ package com.example.complaintclose;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -34,6 +35,29 @@ public class complain_details_activity extends AppCompatActivity {
         ArrayList<complaintModule> list  = new ArrayList<>();
 
         citynamedb = new Citynamedb(this);
+
+        ImageView getlocation = findViewById(R.id.getlocation);
+
+        getlocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create a Uri from an intent string. Use the result to create an Intent.
+//                Uri gmmIntentUri = Uri.parse("google.streetview:cbll=27.4924,77.6737");
+//
+//                // Create an Intent from gmmIntentUri. Set the action to ACTION_VIEW
+//                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+//                // Make the Intent explicit by setting the Google Maps package
+//                mapIntent.setPackage("com.google.android.apps.maps");
+//
+//                // Attempt to start an activity that can handle the Intent
+//                startActivity(mapIntent);
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                        Uri.parse("http://maps.google.com/maps?saddr=&daddr=27.4924,77.6737"));
+                startActivity(intent);
+
+
+            }
+        });
 
         cursor = citynamedb.getdata();
 
@@ -75,7 +99,7 @@ public class complain_details_activity extends AppCompatActivity {
             }
         });
 
-        if (status.equals("2"))
+        if (status.equals("1"))
         {
             okaybutton.setText("OK");
         }
@@ -83,7 +107,7 @@ public class complain_details_activity extends AppCompatActivity {
         okaybutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (status.equals("2"))
+                if (status.equals("1"))
                 {
                     onBackPressed();
                 }else

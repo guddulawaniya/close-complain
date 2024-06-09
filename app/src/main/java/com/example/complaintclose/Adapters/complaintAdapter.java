@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -70,31 +71,33 @@ public class complaintAdapter extends RecyclerView.Adapter<complaintAdapter.view
                 intent.putExtra("tdsin", module.getTdsin());
                 intent.putExtra("tdsout", module.getTdsout());
                 intent.putExtra("address", module.getAddress());
-
+                intent.putExtra("lan", module.getTdsout());
+                intent.putExtra("log", module.getAddress());
                 context.startActivity(intent);
 
             }
         });
 
 
-        if (completeid == 2) {
+        if (completeid == 0) {
+            holder.statusicon.setImageResource(R.drawable.pening_icon);
+            holder.status.setBackgroundColor(Color.parseColor("#FFD041"));
+            holder.status.setText("Pending");
+        } else if (completeid == 1) {
             holder.statusicon.setImageResource(R.drawable.approved_icon);
             holder.status.setBackgroundColor(Color.parseColor("#1EA323"));
-            holder.status.setText("Closed");
-        } else if (completeid == 3) {
-            holder.statusicon.setImageResource(R.drawable.raject_icon);
-            holder.status.setBackgroundColor(Color.parseColor("#D11414"));
-            holder.status.setText("Rajected");
+            holder.status.setText("close");
 
-        }else if (completeid == 1) {
+        }else if (completeid == 2) {
             holder.statusicon.setImageResource(R.drawable.approve);
             holder.status.setBackgroundColor(Color.parseColor("#0CA5AC"));
             holder.status.setText("Approved");
 
-        } else if (completeid==0){
-            holder.statusicon.setImageResource(R.drawable.pening_icon);
-            holder.status.setBackgroundColor(Color.parseColor("#FFD041"));
-            holder.status.setText("Pending");
+        } else if (completeid==3){
+
+            holder.statusicon.setImageResource(R.drawable.raject_icon);
+            holder.status.setBackgroundColor(Color.parseColor("#D11414"));
+            holder.status.setText("Raject");
 
         }
 

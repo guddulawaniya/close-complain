@@ -39,6 +39,7 @@
             android:exported="false" />
         <activity
             android:name=".loginpages.login_Actvity"
+            android:windowSoftInputMode="adjustNothing"
             android:exported="false" />
         <activity
             android:name=".Profile_activity"
@@ -53,6 +54,7 @@
             android:name=".secound_update_activity"
             android:windowSoftInputMode="adjustNothing"
             android:exported="false" />
+
         <activity
             android:name=".loginpages.Splash_Screen"
             android:exported="true">
